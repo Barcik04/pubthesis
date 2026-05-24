@@ -1,0 +1,108 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    gap: 30px;
+
+
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    color: white;
+    font-size: 14px;
+
+    z-index: 9999;  
+}
+
+
+.navbar-logo {
+  color: #111827;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: 0.2s;
+}
+
+.navbar-logo img {
+  width: 28px;
+  height: 28px;
+  display: block;
+  filter: invert(1);
+}
+
+.navbar-logo:hover {
+    transform: scale(1.1);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navbar-links a {
+  color: #374151;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.1s;
+}
+
+.navbar-links a:hover {
+  transform: scale(1.1);
+}
+
+.navbar-menu-button {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  position: relative;
+}
+
+.navbar-menu-button::before,
+.navbar-menu-button::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  width: 20px;
+  height: 2px;
+  background-color: #111827;
+  border-radius: 999px;
+}
+
+.navbar-menu-button::before {
+  top: 14px;
+}
+
+.navbar-menu-button::after {
+  bottom: 14px;
+}
+
+.navbar-menu-button:hover {
+  background-color: #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 20px;
+  }
+
+  .navbar-links {
+    display: none;
+  }
+
+  .navbar-menu-button {
+    display: block;
+  }
+}

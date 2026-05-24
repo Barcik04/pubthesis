@@ -1,14 +1,26 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import Start from "./pages/start";
+
+import Navbar from "./components/Navbar";
+
 
 function App() {
+  const handleToggleSidebar = () => {
+    console.log("Sidebar toggle");
+  };
+
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-    </Routes>
+    <>
+      <Navbar onToggleSidebar={handleToggleSidebar} />
+
+      <Routes>
+        <Route path="/signin" element={<LoginPage />} />
+        <Route path="/signup" element={<RegisterPage />} />
+        <Route path="/start" element={<Start />} />
+      </Routes>
+    </>
   );
 }
 

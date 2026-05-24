@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { register } from "../api/authApi";
-// import "../styles/auth.css";
+import "../styles/RegisterPage.css";
 
 function RegisterPage() {
   const [email, setEmail] = useState("");

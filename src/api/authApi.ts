@@ -8,11 +8,11 @@ type RegisterRequest = {
   password: string;
 };
 
-type LoginResponse = {
-  token: string;
-  tokenType: "Bearer";
+export type LoginResponse = {
+  accessToken: string;
   email: string;
   roles: string[];
+  tokenType: string;
 };
 
 
@@ -31,7 +31,13 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     throw new Error("Invalid email or password");
   }
 
-  return response.json();
+  const result: LoginResponse = await response.json();
+
+  localStorage.setItem("accessToken", result.accessToken);
+  localStorage.setItem("email", result.email);
+  localStorage.setItem("roles", JSON.stringify(result.roles));
+
+  return result;
 }
 
 export async function register(data: RegisterRequest): Promise<void> {

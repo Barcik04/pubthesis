@@ -1,12 +1,11 @@
 import { Link } from "react-router-dom";
 import "../styles/Navbar.css";
 import logo from "../photos/home.png"; 
+import user from "../photos/user.png"; 
 
-type Props = {
-  onToggleSidebar: () => void;
-};
 
-function Navbar({ onToggleSidebar }: Props) {
+
+function Navbar() {
   return (
     <header className="navbar">
       <Link to="/start" className="navbar-logo">
@@ -18,12 +17,13 @@ function Navbar({ onToggleSidebar }: Props) {
         <Link to="/signup">Sign up</Link>
       </nav>
 
-      <button 
-        type="button" 
-        className="navbar-menu-button" 
-        onClick={onToggleSidebar}
-      >
-      </button>
+      <div className="right-navbar">
+        <Link to="/user" className="navbar-logo">
+          <img src={user} alt="Application logo" />
+        </Link>
+      </div>
+
+
     </header>
   );
 }

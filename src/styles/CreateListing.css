@@ -1,0 +1,128 @@
+.page {
+    min-height: 100vh;
+    padding: 60px 24px;
+    background: #f5f7fb;
+    color: #111827;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transform: translate(0, -100px);
+}
+
+.create-card {
+    width: 100%;
+    max-width: 720px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 36px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.create-header {
+    margin-bottom: 32px;
+}
+
+.create-header h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.create-header p {
+    margin: 0;
+    font-size: 15px;
+    color: #6b7280;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.create-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.create-form input,
+.create-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 13px 14px;
+    font-size: 15px;
+    color: #111827;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-form textarea {
+    min-height: 130px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.create-form input::placeholder,
+.create-form textarea::placeholder {
+    color: #9ca3af;
+}
+
+.create-form input:focus,
+.create-form textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.create-form button {
+    margin-top: 8px;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 18px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.create-form button:hover {
+    background: #1d4ed8;
+}
+
+.create-form button:active {
+    transform: scale(0.98);
+}
+
+.error {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+
+.image-row input {
+    width: auto;
+}

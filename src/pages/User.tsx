@@ -50,8 +50,8 @@ function User() {
   }
 
   return (
-    <main className="page">
-        <h1> Your Profile</h1>
+    <main className="user-page">
+        <h1 className="profile-title">Your Profile</h1>
         
         <section className="products-card">
             {error && <p className="error">{error}</p>}
@@ -65,18 +65,26 @@ function User() {
                     {products.map((product) => (
                     <li key={product.id} className="product-item">
                         {product.imageUrl && (
-                        <img
-                            src={`http://localhost:8080${product.imageUrl}`}
-                            alt={product.name}
-                            className="product-image"
-                        />
+                            <img
+                                src={`http://localhost:8080${product.imageUrl}`}
+                                alt={product.name}
+                                className="product-image"
+                            />
                         )}
 
                         <div className="product-info">
-                        <h3>{product.name}</h3>
-                        <p>{product.description}</p>
-                        <p className="product-price">od {product.price} PLN</p>
+                            <h3>{product.name}</h3>
+                            <p>{product.description}</p>
+                            <p className="product-price">od {product.price} PLN</p>
                         </div>
+
+                        <Link
+                            to={`/update-listing/${product.id}`}
+                            state={{ product }}
+                            className="edit-listing-button"
+                        >
+                            Edit
+                        </Link>
                     </li>
                     ))}
                     </ul>

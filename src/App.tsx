@@ -4,7 +4,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Start from "./pages/Start";
 import User from "./pages/User";
 import CreateListing from "./pages/CreateListing";
-
+import UpdateListing from "./pages/UpdateListing";
 
 
 import Navbar from "./components/Navbar";
@@ -23,6 +23,7 @@ function App() {
         <Route path="/start" element={<Start />} />
         <Route path="/user" element={<User />} />
         <Route path="/create-listing" element={<CreateListing />} />
+        <Route path="/update-listing/:productId" element={<UpdateListing />} />
       </Routes>
     </>
   );

@@ -100,3 +100,51 @@ export async function createProduct(
 
   return response.json();
 }
+
+
+
+
+
+export async function updateProduct(
+  productId: number,
+  product: {
+    name: string;
+    description: string;
+    price: number;
+    types: string[];
+  },
+  image?: File | null
+) {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const formData = new FormData();
+
+  formData.append(
+    "product",
+    new Blob([JSON.stringify(product)], {
+      type: "application/json",
+    })
+  );
+
+  if (image) {
+    formData.append("image", image);
+  }
+
+  const response = await fetch(`${API_URL}/${productId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update product");
+  }
+
+  return response.json();
+}

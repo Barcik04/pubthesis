@@ -26,14 +26,27 @@ export async function getProducts(page = 0, size = 20): Promise<ProductsPage> {
 }
 
 
-export async function getMyProducts(page = 0, size = 20): Promise<ProductsPage> {
+export async function getMyProducts(
+  page = 0,
+  size = 20,
+  name = ""
+): Promise<ProductsPage> {
   const token = localStorage.getItem("accessToken");
 
   if (!token) {
     throw new Error("User is not authenticated");
   }
 
-  const response = await fetch(`${API_URL}/my-products?page=${page}&size=${size}`, {
+  const params = new URLSearchParams();
+
+  params.append("page", page.toString());
+  params.append("size", size.toString());
+
+  if (name.trim() !== "") {
+    params.append("name", name.trim());
+  }
+
+  const response = await fetch(`${API_URL}/my-products?${params.toString()}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -147,4 +160,26 @@ export async function updateProduct(
   }
 
   return response.json();
+}
+
+
+
+
+export async function deleteProduct(productId: number): Promise<void> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(`${API_URL}/${productId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete product");
+  }
 }

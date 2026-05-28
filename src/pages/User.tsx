@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import { getMyProducts } from "../api/productsApi";
+import { getMyProducts, deleteProduct } from "../api/productsApi";
 import { Link } from "react-router-dom";
+
+import edit from "../photos/edit.png"; 
+import bin from "../photos/bin.png"; 
+
 
 import "../styles/User.css";
 
@@ -18,36 +22,70 @@ function User() {
   const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
   const pageSize = 20;
 
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true);
-        setError("");
+    useEffect(() => {
+        setPage(0);
+        }, [debouncedSearchText]);
 
-        const data = await getMyProducts(page, pageSize);
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setDebouncedSearchText(searchText);
+        }, 200);
 
-        setProducts(data.content);
-        setTotalPages(data.totalPages);
-      } catch (err) {
-        setError("Failed to load products");
-      } finally {
-        setLoading(false);
-      }
+        return () => clearTimeout(timeoutId);
+        }, [searchText]);
+
+    useEffect(() => {
+        async function loadProducts() {
+            try {
+            setLoading(true);
+            setError("");
+
+            const data = await getMyProducts(page, pageSize, debouncedSearchText);
+
+            setProducts(data.content);
+            setTotalPages(data.totalPages);
+            } catch (err) {
+            setError("Failed to load products");
+            } finally {
+            setLoading(false);
+            }
+        }
+
+  loadProducts();
+}, [page, debouncedSearchText]);
+
+    function goToPreviousPage() {
+        setPage((currentPage) => Math.max(currentPage - 1, 0));
     }
 
-    loadProducts();
-  }, [page]);
+    function goToNextPage() {
+        setPage((currentPage) => Math.min(currentPage + 1, totalPages - 1));
+    }
 
-  function goToPreviousPage() {
-    setPage((currentPage) => Math.max(currentPage - 1, 0));
-  }
+    async function handleDeleteProduct(productId: number) {
+        const confirmed = window.confirm("Are you sure you want to delete this listing?");
 
-  function goToNextPage() {
-    setPage((currentPage) => Math.min(currentPage + 1, totalPages - 1));
-  }
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setError("");
+
+            await deleteProduct(productId);
+
+            setProducts((currentProducts) =>
+            currentProducts.filter((product) => product.id !== productId)
+            );
+        } catch (err) {
+            setError("Failed to delete product");
+        }
+    }
 
   return (
     <main className="user-page">
@@ -57,8 +95,18 @@ function User() {
             {error && <p className="error">{error}</p>}
 
             {loading && <p className="loading">Loading products...</p>}
-
+            <input
+                type="text"
+                placeholder="Search listings..."
+                value={searchText}
+                onChange={(event) => {
+                    setSearchText(event.target.value);
+                    setPage(0);
+                }}
+                className="products-search-input"
+                />
             <h2>Your listings</h2>
+
             <div className="profile-content">
                     {!loading && (
                     <ul className="products-list">
@@ -77,14 +125,30 @@ function User() {
                             <p>{product.description}</p>
                             <p className="product-price">od {product.price} PLN</p>
                         </div>
+                        <div className="buttons-wrap">
+                            <Link
+                                to={`/update-listing/${product.id}`}
+                                state={{ product }}
+                                className="edit-listing-button"
+                            >
+                                <img
+                                    src={edit} alt="Application logo" 
+                                    className="edit-image"
+                                />
+                            </Link>
 
-                        <Link
-                            to={`/update-listing/${product.id}`}
-                            state={{ product }}
-                            className="edit-listing-button"
-                        >
-                            Edit
-                        </Link>
+
+                            <button
+                                type="button"
+                                className="delete-listing-button"
+                                onClick={() => handleDeleteProduct(product.id)}
+                            >
+                                <img
+                                    src={bin} alt="Application logo" 
+                                    className="edit-image"
+                                />
+                            </button>
+                        </div>
                     </li>
                     ))}
                     </ul>

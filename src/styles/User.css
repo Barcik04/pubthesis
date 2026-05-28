@@ -52,7 +52,7 @@ h1 {
 .edit-listing-button {
     opacity: 0;
     visibility: hidden;
-    padding: 10px 18px;
+    padding: 8px 10px;
     border-radius: 999px;
     background: #111827;
     color: #ffffff;
@@ -73,12 +73,50 @@ h1 {
     background: #374151;
 }
 
-.product-image {
-  width: 130px;
-  height: 100px;
+
+.delete-listing-button {
+    opacity: 0;
+    visibility: hidden;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+}
+
+.product-item:hover .delete-listing-button {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-1px);
+}
+
+.delete-listing-button:hover {
+    background: #374151;
+}
+
+.buttons-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.delete-listing-button {
+    background-color: #991b1b;
+    border: none;
+    padding: 8px 0;
+    border-radius: 20px;
+}
+
+.edit-image {
+  width: 18px;
+  height: 18px;
   object-fit: cover;
   border-radius: 12px;
-  flex-shrink: 0;
+  filter: invert(1);
 }
 
 .product-info {
@@ -231,4 +269,22 @@ h1 {
     font-size: 36px;
     font-weight: 800;
     color: #111827;
+}
+
+
+
+
+.products-search-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 16px;
+    margin-bottom: 54px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+}
+
+.products-search-input:focus {
+    border-color: #000000;
 }

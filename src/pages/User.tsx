@@ -22,42 +22,29 @@ function User() {
   const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const [debouncedSearchText, setDebouncedSearchText] = useState("");
+  const [searchName, setSearchName] = useState("");
 
   const pageSize = 20;
 
     useEffect(() => {
-        setPage(0);
-        }, [debouncedSearchText]);
+    async function loadProducts() {
+        try {
+        setLoading(true);
+        setError("");
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setDebouncedSearchText(searchText);
-        }, 200);
+        const data = await getMyProducts(page, pageSize, searchName);
 
-        return () => clearTimeout(timeoutId);
-        }, [searchText]);
-
-    useEffect(() => {
-        async function loadProducts() {
-            try {
-            setLoading(true);
-            setError("");
-
-            const data = await getMyProducts(page, pageSize, debouncedSearchText);
-
-            setProducts(data.content);
-            setTotalPages(data.totalPages);
-            } catch (err) {
-            setError("Failed to load products");
-            } finally {
-            setLoading(false);
-            }
+        setProducts(data.content);
+        setTotalPages(data.totalPages);
+        } catch (err) {
+        setError("Failed to load products");
+        } finally {
+        setLoading(false);
         }
+    }
 
-  loadProducts();
-}, [page, debouncedSearchText]);
+    loadProducts();
+    }, [page, searchName]);
 
     function goToPreviousPage() {
         setPage((currentPage) => Math.max(currentPage - 1, 0));
@@ -95,18 +82,19 @@ function User() {
             {error && <p className="error">{error}</p>}
 
             {loading && <p className="loading">Loading products...</p>}
+            <div className="search-form">
             <input
                 type="text"
-                placeholder="Search listings..."
-                value={searchText}
+                placeholder="Search your listings..."
+                value={searchName}
                 onChange={(event) => {
-                    setSearchText(event.target.value);
-                    setPage(0);
+                setPage(0);
+                setSearchName(event.target.value);
                 }}
-                className="products-search-input"
-                />
+                className="search-input"
+            />
+            </div>
             <h2>Your listings</h2>
-
             <div className="profile-content">
                     {!loading && (
                     <ul className="products-list">

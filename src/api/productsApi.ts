@@ -39,8 +39,8 @@ export async function getMyProducts(
 
   const params = new URLSearchParams();
 
-  params.append("page", page.toString());
-  params.append("size", size.toString());
+  params.append("page", String(page));
+  params.append("size", String(size));
 
   if (name.trim() !== "") {
     params.append("name", name.trim());
@@ -59,7 +59,6 @@ export async function getMyProducts(
 
   return response.json();
 }
-
 
 
 

@@ -274,17 +274,21 @@ h1 {
 
 
 
-.products-search-input {
+.search-form {
+    display: flex;
+    margin-bottom: 24px;
+}
+
+.search-input {
     width: 100%;
-    max-width: 300px;
-    padding: 12px 16px;
-    margin-bottom: 54px;
+    max-width: 420px;
+    padding: 12px 14px;
     border: 1px solid #d1d5db;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 15px;
     outline: none;
 }
 
-.products-search-input:focus {
-    border-color: #000000;
+.search-input:focus {
+    border-color: #111827;
 }

@@ -15,8 +15,26 @@ type ProductsPage = {
 
 const API_URL = "http://localhost:8080/products";
 
-export async function getProducts(page = 0, size = 20): Promise<ProductsPage> {
-  const response = await fetch(`${API_URL}?page=${page}&size=${size}`);
+export async function getProducts(
+  page = 0,
+  size = 20,
+  name = "",
+  types: string[] = []
+): Promise<ProductsPage> {
+  const params = new URLSearchParams();
+
+  params.append("page", String(page));
+  params.append("size", String(size));
+
+  if (name.trim() !== "") {
+    params.append("name", name.trim());
+  }
+
+  types.forEach((type) => {
+    params.append("types", type);
+  });
+
+  const response = await fetch(`${API_URL}?${params.toString()}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch products");
@@ -29,7 +47,8 @@ export async function getProducts(page = 0, size = 20): Promise<ProductsPage> {
 export async function getMyProducts(
   page = 0,
   size = 20,
-  name = ""
+  name = "",
+  types: string[] = []
 ): Promise<ProductsPage> {
   const token = localStorage.getItem("accessToken");
 
@@ -46,6 +65,10 @@ export async function getMyProducts(
     params.append("name", name.trim());
   }
 
+  types.forEach((type) => {
+    params.append("types", type);
+  });
+
   const response = await fetch(`${API_URL}/my-products?${params.toString()}`, {
     method: "GET",
     headers: {
@@ -61,6 +84,21 @@ export async function getMyProducts(
 }
 
 
+
+export type ProductType = {
+  id: number;
+  type: string;
+};
+
+export async function getProductTypes(): Promise<ProductType[]> {
+  const response = await fetch("http://localhost:8080/types");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch product types");
+  }
+
+  return response.json();
+}
 
 
 

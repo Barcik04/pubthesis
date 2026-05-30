@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMyProducts, deleteProduct } from "../api/productsApi";
+import { getMyProducts, deleteProduct, getProductTypes } from "../api/productsApi";
 import { Link } from "react-router-dom";
 
 import edit from "../photos/edit.png"; 
@@ -16,6 +16,11 @@ type Product = {
     imageUrl?: string | null;
 };
 
+type ProductType = {
+  id: number;
+  type: string;
+};
+
 function User() {
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(0);
@@ -23,8 +28,24 @@ function User() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchName, setSearchName] = useState("");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [availableTypes, setAvailableTypes] = useState<ProductType[]>([]);
+  const [isTypesOpen, setIsTypesOpen] = useState(false);
 
   const pageSize = 20;
+
+  useEffect(() => {
+  async function loadProductTypes() {
+    try {
+      const data = await getProductTypes();
+      setAvailableTypes(data);
+    } catch (err) {
+      setError("Failed to load product types");
+    }
+  }
+
+  loadProductTypes();
+  }, []);
 
     useEffect(() => {
     async function loadProducts() {
@@ -32,8 +53,8 @@ function User() {
         setLoading(true);
         setError("");
 
-        const data = await getMyProducts(page, pageSize, searchName);
-
+        const data = await getMyProducts(page, pageSize, searchName, selectedTypes);
+        
         setProducts(data.content);
         setTotalPages(data.totalPages);
         } catch (err) {
@@ -44,7 +65,7 @@ function User() {
     }
 
     loadProducts();
-    }, [page, searchName]);
+    }, [page, searchName, selectedTypes]);
 
     function goToPreviousPage() {
         setPage((currentPage) => Math.max(currentPage - 1, 0));
@@ -52,6 +73,18 @@ function User() {
 
     function goToNextPage() {
         setPage((currentPage) => Math.min(currentPage + 1, totalPages - 1));
+    }
+
+    function handleTypeChange(type: string) {
+        setPage(0);
+
+        setSelectedTypes((currentTypes) => {
+            if (currentTypes.includes(type)) {
+            return currentTypes.filter((currentType) => currentType !== type);
+            }
+
+            return [...currentTypes, type];
+        });
     }
 
     async function handleDeleteProduct(productId: number) {
@@ -82,18 +115,52 @@ function User() {
             {error && <p className="error">{error}</p>}
 
             {loading && <p className="loading">Loading products...</p>}
-            <div className="search-form">
-            <input
-                type="text"
-                placeholder="Search your listings..."
-                value={searchName}
-                onChange={(event) => {
-                setPage(0);
-                setSearchName(event.target.value);
-                }}
-                className="search-input"
-            />
+            <div className="filters-wrap">
+                <div className="search-form">
+                    <input
+                        type="text"
+                        placeholder="Search your listings..."
+                        value={searchName}
+                        onChange={(event) => {
+                        setPage(0);
+                        setSearchName(event.target.value);
+                        }}
+                        className="search-input"
+                    />
+                    </div>
+                    <div className="types-dropdown">
+                        <button
+                            type="button"
+                            className="types-dropdown-button"
+                            onClick={() => setIsTypesOpen((current) => !current)}
+                        >
+                            <span>
+                            Categories
+                            {selectedTypes.length > 0 && ` (${selectedTypes.length})`}
+                            </span>
+
+                            <span className="dropdown-arrows">
+                            ˅˅
+                            </span>
+                        </button>
+
+                        {isTypesOpen && (
+                            <div className="types-dropdown-menu">
+                            {availableTypes.map((productType) => (
+                                <label key={productType.id} className="types-dropdown-item">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedTypes.includes(productType.type)}
+                                    onChange={() => handleTypeChange(productType.type)}
+                                />
+                                {productType.type}
+                                </label>
+                            ))}
+                            </div>
+                        )}
+                    </div>
             </div>
+        
             <h2>Your listings</h2>
             <div className="profile-content">
                     {!loading && (

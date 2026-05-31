@@ -19,7 +19,9 @@ export async function getProducts(
   page = 0,
   size = 20,
   name = "",
-  types: string[] = []
+  types: string[] = [],
+  minPrice?: number,
+  maxPrice?: number
 ): Promise<ProductsPage> {
   const params = new URLSearchParams();
 
@@ -34,6 +36,14 @@ export async function getProducts(
     params.append("types", type);
   });
 
+  if (minPrice !== undefined && minPrice !== null) {
+    params.append("minPrice", String(minPrice));
+  }
+
+  if (maxPrice !== undefined && maxPrice !== null) {
+    params.append("maxPrice", String(maxPrice));
+  }
+
   const response = await fetch(`${API_URL}?${params.toString()}`);
 
   if (!response.ok) {
@@ -44,11 +54,16 @@ export async function getProducts(
 }
 
 
+
+
+
 export async function getMyProducts(
   page = 0,
   size = 20,
   name = "",
-  types: string[] = []
+  types: string[] = [],
+  minPrice?: number,
+  maxPrice?: number
 ): Promise<ProductsPage> {
   const token = localStorage.getItem("accessToken");
 
@@ -68,6 +83,14 @@ export async function getMyProducts(
   types.forEach((type) => {
     params.append("types", type);
   });
+
+    if (minPrice !== undefined && minPrice !== null) {
+    params.append("minPrice", String(minPrice));
+  }
+
+  if (maxPrice !== undefined && maxPrice !== null) {
+    params.append("maxPrice", String(maxPrice));
+  }
 
   const response = await fetch(`${API_URL}/my-products?${params.toString()}`, {
     method: "GET",
@@ -219,4 +242,39 @@ export async function deleteProduct(productId: number): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to delete product");
   }
+}
+
+
+
+
+
+
+export type ProductOffer = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  createdAt: string;
+};
+
+export type ProductDetails = {
+  id: number;
+  name: string;
+  description: string;
+  types: string[];
+  price: number;
+  creationDate: string;
+  isActive: boolean;
+  imageUrl: string | null;
+  offers: ProductOffer[];
+};
+
+export async function getProductById(productId: number): Promise<ProductDetails> {
+  const response = await fetch(`${API_URL}/${productId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch product details");
+  }
+
+  return response.json();
 }

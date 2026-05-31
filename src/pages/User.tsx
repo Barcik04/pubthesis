@@ -32,6 +32,10 @@ function User() {
   const [availableTypes, setAvailableTypes] = useState<ProductType[]>([]);
   const [isTypesOpen, setIsTypesOpen] = useState(false);
 
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(10000);
+
+
   const pageSize = 20;
 
   useEffect(() => {
@@ -53,7 +57,16 @@ function User() {
         setLoading(true);
         setError("");
 
-        const data = await getMyProducts(page, pageSize, searchName, selectedTypes);
+
+        const data = await getMyProducts(
+          page,
+          pageSize,
+          searchName,
+          selectedTypes,
+          minPrice,
+          maxPrice
+        );
+        
         
         setProducts(data.content);
         setTotalPages(data.totalPages);
@@ -65,7 +78,7 @@ function User() {
     }
 
     loadProducts();
-    }, [page, searchName, selectedTypes]);
+    }, [page, searchName, selectedTypes, minPrice, maxPrice]);
 
     function goToPreviousPage() {
         setPage((currentPage) => Math.max(currentPage - 1, 0));
@@ -109,14 +122,14 @@ function User() {
 
   return (
     <main className="user-page">
-        <h1 className="profile-title">Your Profile</h1>
+        <h1 className="profile-title-user">Your Profile</h1>
         
-        <section className="products-card">
+        <section className="products-card-user">
             {error && <p className="error">{error}</p>}
 
             {loading && <p className="loading">Loading products...</p>}
-            <div className="filters-wrap">
-                <div className="search-form">
+            <div className="filters-wrap-user">
+                <div className="search-form-user">
                     <input
                         type="text"
                         placeholder="Search your listings..."
@@ -125,13 +138,13 @@ function User() {
                         setPage(0);
                         setSearchName(event.target.value);
                         }}
-                        className="search-input"
+                        className="search-input-user"
                     />
                     </div>
-                    <div className="types-dropdown">
+                    <div className="types-dropdown-user">
                         <button
                             type="button"
-                            className="types-dropdown-button"
+                            className="types-dropdown-button-user"
                             onClick={() => setIsTypesOpen((current) => !current)}
                         >
                             <span>
@@ -139,15 +152,15 @@ function User() {
                             {selectedTypes.length > 0 && ` (${selectedTypes.length})`}
                             </span>
 
-                            <span className="dropdown-arrows">
+                            <span className="dropdown-arrows-user">
                             ˅˅
                             </span>
                         </button>
 
                         {isTypesOpen && (
-                            <div className="types-dropdown-menu">
+                            <div className="types-dropdown-menu-user">
                             {availableTypes.map((productType) => (
-                                <label key={productType.id} className="types-dropdown-item">
+                                <label key={productType.id} className="types-dropdown-item-user">
                                 <input
                                     type="checkbox"
                                     checked={selectedTypes.includes(productType.type)}
@@ -159,48 +172,98 @@ function User() {
                             </div>
                         )}
                     </div>
+                    <div className="price-filter">
+                        <label className="price-text">
+                            <label className="price-text">
+                            <span>MIN {minPrice} PLN</span>
+                            <span>-</span>
+                            <span>MAX {maxPrice} PLN</span>
+                            </label>
+                        </label>
+
+                        <div className="price-slider-group">
+                            <div className="price-slider-wrap">
+                            <input
+                                type="range"
+                                min="0"
+                                max="10000"
+                                step="100"
+                                value={minPrice}
+                                onChange={(event) => {
+                                const newMinPrice = Number(event.target.value);
+
+                                if (newMinPrice <= maxPrice) {
+                                    setPage(0);
+                                    setMinPrice(newMinPrice);
+                                }
+                                }}
+                            />
+
+                            <input
+                                type="range"
+                                min="0"
+                                max="10000"
+                                step="100"
+                                value={maxPrice}
+                                onChange={(event) => {
+                                const newMaxPrice = Number(event.target.value);
+
+                                if (newMaxPrice >= minPrice) {
+                                    setPage(0);
+                                    setMaxPrice(newMaxPrice);
+                                }
+                                }}
+                            />
+                        </div>
+                            
+                    </div>
+                </div>
             </div>
         
             <h2>Your listings</h2>
-            <div className="profile-content">
+            <div className="profile-content-user">
                     {!loading && (
-                    <ul className="products-list">
+                    <ul className="products-list-user">
                     {products.map((product) => (
-                    <li key={product.id} className="product-item">
+                    <li key={product.id} className="product-item-user">
                         {product.imageUrl && (
                             <img
                                 src={`http://localhost:8080${product.imageUrl}`}
                                 alt={product.name}
-                                className="product-image"
+                                className="product-image-user"
                             />
                         )}
 
-                        <div className="product-info">
+                        <div className="product-info-user">
                             <h3>{product.name}</h3>
                             <p>{product.description}</p>
-                            <p className="product-price">od {product.price} PLN</p>
+                            <p className="product-price-user">od {product.price} PLN</p>
                         </div>
-                        <div className="buttons-wrap">
+                        <Link to={`/listing-page/${product.id}`} className="details-button">
+                        View details
+                        </Link>
+                        <div className="buttons-wrap-user">
                             <Link
                                 to={`/update-listing/${product.id}`}
                                 state={{ product }}
-                                className="edit-listing-button"
+                                className="edit-listing-button-user"
                             >
                                 <img
                                     src={edit} alt="Application logo" 
-                                    className="edit-image"
+                                    className="edit-image-user"
                                 />
                             </Link>
 
 
+
                             <button
                                 type="button"
-                                className="delete-listing-button"
+                                className="delete-listing-button-user"
                                 onClick={() => handleDeleteProduct(product.id)}
                             >
                                 <img
                                     src={bin} alt="Application logo" 
-                                    className="edit-image"
+                                    className="edit-image-user"
                                 />
                             </button>
                         </div>
@@ -209,8 +272,8 @@ function User() {
                     </ul>
                 )}
 
-                <aside className="right-list">
-                    <Link to="/create-listing" className="create-listing-button">
+                <aside className="right-list-user">
+                    <Link to="/create-listing" className="create-listing-button-user">
                         Create listing
                     </Link>
                 </aside>
@@ -220,23 +283,23 @@ function User() {
 
         </section>
 
-        <div className="pagination">
+        <div className="pagination-user">
         <button
             onClick={goToPreviousPage}
             disabled={page === 0}
-            className="pagination-button"
+            className="pagination-button-user"
         >
             &lt;
         </button>
 
-        <span className="pagination-info">
+        <span className="pagination-info-user">
             Page {page + 1} of {Math.max(totalPages, 1)}
         </span>
 
         <button
             onClick={goToNextPage}
             disabled={page >= totalPages - 1}
-            className="pagination-button"
+            className="pagination-button-user"
         >
             &gt;
         </button>

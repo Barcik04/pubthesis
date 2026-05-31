@@ -8,6 +8,7 @@ import UpdateListing from "./pages/UpdateListing";
 
 
 import Navbar from "./components/Navbar";
+import ListingPage from "./pages/ListingPage";
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/user" element={<User />} />
         <Route path="/create-listing" element={<CreateListing />} />
         <Route path="/update-listing/:productId" element={<UpdateListing />} />
+        <Route path="/listing-page/:productId" element={<ListingPage />} />
       </Routes>
     </>
   );

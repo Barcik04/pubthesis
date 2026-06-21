@@ -1,7 +1,23 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { updateProduct } from "../api/productsApi";
+import { createProductOffer, updateProduct } from "../api/productsApi";
 import "../styles/CreateListing.css";
+
+import plus from "../photos/plus.png";
+
+type Offer = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  createdAt: string;
+};
+
+type NewOffer = {
+  name: string;
+  description: string;
+  price: string;
+};
 
 type Product = {
   id: number;
@@ -10,6 +26,7 @@ type Product = {
   price: number;
   types: string[];
   imageUrl?: string | null;
+  offers: Offer[];
 };
 
 function UpdateListing() {
@@ -27,6 +44,48 @@ function UpdateListing() {
   const [types, setTypes] = useState(product?.types?.join(", ") ?? "");
   const [image, setImage] = useState<File | null>(null);
 
+  const [newOffers, setNewOffers] = useState<NewOffer[]>([]);
+
+  const [isOfferPopupOpen, setIsOfferPopupOpen] = useState(false);
+  const [offerName, setOfferName] = useState("");
+  const [offerDescription, setOfferDescription] = useState("");
+  const [offerPrice, setOfferPrice] = useState("");
+
+  function handleOpenOfferPopup() {
+    setIsOfferPopupOpen(true);
+    setError("");
+  }
+
+  function handleCloseOfferPopup() {
+    setIsOfferPopupOpen(false);
+  }
+
+  function handleAddOfferToLocalList() {
+    if (
+      offerName.trim().length === 0 ||
+      offerDescription.trim().length === 0 ||
+      offerPrice.trim().length === 0
+    ) {
+      setError("Fill all offer fields");
+      return;
+    }
+
+    setNewOffers([
+      ...newOffers,
+      {
+        name: offerName,
+        description: offerDescription,
+        price: offerPrice,
+      },
+    ]);
+
+    setOfferName("");
+    setOfferDescription("");
+    setOfferPrice("");
+    setIsOfferPopupOpen(false);
+    setError("");
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -38,6 +97,8 @@ function UpdateListing() {
     try {
       setError("");
 
+      const parsedProductId = Number(productId);
+
       const data = {
         name: name,
         description: description,
@@ -48,7 +109,15 @@ function UpdateListing() {
           .filter((type) => type.length > 0),
       };
 
-      await updateProduct(Number(productId), data, image);
+      await updateProduct(parsedProductId, data, image);
+
+      for (const offer of newOffers) {
+        await createProductOffer(parsedProductId, {
+          name: offer.name,
+          description: offer.description,
+          price: Number(offer.price),
+        });
+      }
 
       navigate("/user");
     } catch (err) {
@@ -123,6 +192,42 @@ function UpdateListing() {
             </label>
           </div>
 
+          <div className="offers-section">
+            <div className="offers-wrapper">
+              <h2>Offers</h2>
+
+              <button
+                type="button"
+                className="add-btn"
+                onClick={handleOpenOfferPopup}
+              >
+                <img src={plus} alt="add-plus-btn" />
+              </button>
+            </div>
+
+            {product.offers.length === 0 && newOffers.length === 0 ? (
+              <p>No offers yet</p>
+            ) : (
+              <ul className="offers-list">
+                {product.offers.map((offer) => (
+                  <li className="offer-object" key={offer.id}>
+                    <h3>{offer.name}</h3>
+                    <p>{offer.description}</p>
+                    <p>{offer.price} PLN</p>
+                  </li>
+                ))}
+
+                {newOffers.map((offer, index) => (
+                  <li className="offer-object" key={`new-offer-${index}`}>
+                    <h3>{offer.name}</h3>
+                    <p>{offer.description}</p>
+                    <p>{offer.price} PLN</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           {product.imageUrl && (
             <div>
               <p>Current image:</p>
@@ -157,9 +262,60 @@ function UpdateListing() {
 
           {error && <p className="error">{error}</p>}
 
-          <button type="submit">Update listing</button>
+          <button className="submit-btn" type="submit">
+            Create listing
+          </button>
         </form>
       </section>
+
+      {isOfferPopupOpen && (
+        <div className="offer-popup-backdrop" onClick={handleCloseOfferPopup}>
+          <div
+            className="offer-popup"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>Add offer</h2>
+
+            <label>
+              Offer name
+              <input
+                type="text"
+                placeholder="e.g. Basic package"
+                value={offerName}
+                onChange={(event) => setOfferName(event.target.value)}
+              />
+            </label>
+
+            <label>
+              Offer description
+              <textarea
+                placeholder="Describe this offer..."
+                value={offerDescription}
+                onChange={(event) => setOfferDescription(event.target.value)}
+              />
+            </label>
+
+            <label>
+              Offer price
+              <input
+                type="number"
+                min="0"
+                placeholder="e.g. 99"
+                value={offerPrice}
+                onChange={(event) => setOfferPrice(event.target.value)}
+              />
+            </label>
+
+            <button
+              type="button"
+              className="submit-btn"
+              onClick={handleAddOfferToLocalList}
+            >
+              Add offer
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

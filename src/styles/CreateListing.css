@@ -89,7 +89,7 @@
     gap: 18px;
 }
 
-.create-form button {
+.submit-btn  {
     margin-top: 8px;
     border: none;
     border-radius: 12px;
@@ -102,11 +102,11 @@
     transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.create-form button:hover {
+.submit-btn:hover {
     background: #1d4ed8;
 }
 
-.create-form button:active {
+.submit-btn:active {
     transform: scale(0.98);
 }
 
@@ -124,4 +124,118 @@
 
 .image-row input {
     width: auto;
+}
+
+
+
+.add-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.add-btn img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  margin-left: 10px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.add-btn img:hover {
+    transform: scale(1.1);
+}
+
+.offers-wrapper { 
+    display: flex;
+    flex-direction: row;
+    transform: translate(-300px, 45px);
+}
+
+.offers-section {
+  width: 100%;
+}
+
+.offers-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.offers-wrapper h2 {
+  margin: 0;
+}
+
+.offers-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0 0;
+} 
+
+
+
+.offer-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.offer-popup {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.offer-popup h2 {
+  margin: 0;
+}
+
+.offer-popup label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.offer-popup input,
+.offer-popup textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-size: 15px;
+  color: #111827;
+  background: #ffffff;
+  outline: none;
+}
+
+.offer-popup textarea {
+  min-height: 110px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.offer-object {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById, type ProductDetails } from "../api/productsApi";
 
-import "../styles/User.css";
+import "../styles/ListingPage.css";
 
 function ListingPage() {
   const { productId } = useParams();
@@ -49,7 +49,7 @@ function ListingPage() {
 
   return (
     <main className="page-listing">
-      <section className="products-card-listing">
+      <div className="image-wrapper">
         {product.imageUrl && (
           <img
             src={`http://localhost:8080${product.imageUrl}`}
@@ -58,43 +58,40 @@ function ListingPage() {
           />
         )}
 
-        <h1>{product.name}</h1>
+        <div className="name-wrapper">
+          <h1>{product.name}</h1>
 
-        <p>{product.description}</p>
-
-        <p className="product-price-listing">
-          od {product.price} PLN
-        </p>
-
-        <p>
-          Status: {product.isActive ? "Active" : "Inactive"}
-        </p>
+          <p>{product.description}</p>
+        </div>
 
 
-        <h2>Categories</h2>
+        <div className="offers-wrapper">
+          <h2>Offers</h2>
+          {product.offers.length === 0 ? (
+            <p>No offers yet</p>
+          ) : (
+            <ul>
+              {product.offers.map((offer) => (
+                <li key={offer.id}>
+                  <h3>{offer.name}</h3>
+                  <p>{offer.description}</p>
+                  <p>{offer.price} PLN</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        
+      </div>
+      
 
-        <ul>
+        <ul className="types-list">
           {product.types.map((type) => (
-            <li key={type}>{type}</li>
+            <li className="types-object" key={type}>{type}</li>
           ))}
         </ul>
 
-        <h2>Offers</h2>
-
-        {product.offers.length === 0 ? (
-          <p>No offers yet</p>
-        ) : (
-          <ul>
-            {product.offers.map((offer) => (
-              <li key={offer.id}>
-                <h3>{offer.name}</h3>
-                <p>{offer.description}</p>
-                <p>{offer.price} PLN</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        
     </main>
   );
 }

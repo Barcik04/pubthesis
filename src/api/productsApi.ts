@@ -278,3 +278,39 @@ export async function getProductById(productId: number): Promise<ProductDetails>
 
   return response.json();
 }
+
+
+
+
+
+type ProductOfferCreateData = {
+  name: string;
+  description: string;
+  price: number;
+};
+
+export async function createProductOffer(
+  productId: number,
+  data: ProductOfferCreateData
+): Promise<ProductOffer> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(`http://localhost:8080/offers/${productId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create product offer");
+  }
+
+  return response.json();
+}

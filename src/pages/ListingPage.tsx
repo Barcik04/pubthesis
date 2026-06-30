@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById, type ProductDetails } from "../api/productsApi";
+import { Link } from "react-router-dom";
 
 import "../styles/ListingPage.css";
 
@@ -24,6 +25,8 @@ function ListingPage() {
 
         const data = await getProductById(Number(productId));
 
+        console.log(data);
+        console.log(data.offers);
         setProduct(data);
       } catch (err) {
         setError("Failed to load product");
@@ -49,49 +52,60 @@ function ListingPage() {
 
   return (
     <main className="page-listing">
-      <div className="image-wrapper">
-        {product.imageUrl && (
-          <img
-            src={`http://localhost:8080${product.imageUrl}`}
-            alt={product.name}
-            className="product-image-listing"
-          />
-        )}
+      <div className="listing-content">
+        <div className="left-column">
+          <div className="product-image-placeholder">
+            {product.imageUrl ? (
+              <img
+                src={`http://localhost:8080${product.imageUrl}`}
+                alt={product.name}
+                className="product-image-listing"
+              />
+            ) : (
+              <span>No image</span>
+            )}
+          </div>
 
-        <div className="name-wrapper">
-          <h1>{product.name}</h1>
-
-          <p>{product.description}</p>
+          <ul className="types-list">
+            {product.types.map((type) => (
+              <li className="types-object" key={type}>
+                {type}
+              </li>
+            ))}
+          </ul>
         </div>
 
+        <div className="middle-column">
+          <div className="name-wrapper">
+            <h1>{product.name}</h1>
+            <p>{product.description}</p>
+          </div>
+        </div>
 
-        <div className="offers-wrapper">
+        <div className="offers-wrapper-listing">
           <h2>Offers</h2>
+
           {product.offers.length === 0 ? (
             <p>No offers yet</p>
           ) : (
-            <ul>
+            <ul className="offers-list">
               {product.offers.map((offer) => (
-                <li key={offer.id}>
-                  <h3>{offer.name}</h3>
-                  <p>{offer.description}</p>
-                  <p>{offer.price} PLN</p>
+                <li className="offer-object" key={offer.id}>
+                  <div className="offer-info">
+                    <h3>{offer.name}</h3>
+                    <p>{offer.description}</p>
+                    <p>{offer.price} PLN</p>
+                    <p>{offer.durationMinutes} min</p>
+                  </div>
+                  <Link to={`/reservation/${offer.id}`} className="offer-check-button">
+                    Check
+                  </Link>
                 </li>
               ))}
             </ul>
           )}
         </div>
-        
       </div>
-      
-
-        <ul className="types-list">
-          {product.types.map((type) => (
-            <li className="types-object" key={type}>{type}</li>
-          ))}
-        </ul>
-
-        
     </main>
   );
 }

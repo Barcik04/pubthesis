@@ -8,6 +8,7 @@ type NewOffer = {
   name: string;
   description: string;
   price: string;
+  durationMinutes: string;
 };
 
 function CreateListing() {
@@ -25,6 +26,7 @@ function CreateListing() {
   const [offerName, setOfferName] = useState("");
   const [offerDescription, setOfferDescription] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
+  const [offerDurationMinutes, setOfferDurationMinutes] = useState("");
 
   function handleOpenOfferPopup() {
     setIsOfferPopupOpen(true);
@@ -39,7 +41,8 @@ function CreateListing() {
     if (
       offerName.trim().length === 0 ||
       offerDescription.trim().length === 0 ||
-      offerPrice.trim().length === 0
+      offerPrice.trim().length === 0 ||
+      offerDurationMinutes.trim().length === 0
     ) {
       setError("Fill all offer fields");
       return;
@@ -51,12 +54,14 @@ function CreateListing() {
         name: offerName,
         description: offerDescription,
         price: offerPrice,
+        durationMinutes: offerDurationMinutes,
       },
     ]);
 
     setOfferName("");
     setOfferDescription("");
     setOfferPrice("");
+    setOfferDurationMinutes("");
     setIsOfferPopupOpen(false);
     setError("");
   }
@@ -84,6 +89,7 @@ function CreateListing() {
           name: offer.name,
           description: offer.description,
           price: Number(offer.price),
+          durationMinutes: Number(offer.durationMinutes),
         });
       }
 
@@ -176,6 +182,7 @@ function CreateListing() {
                     <h3>{offer.name}</h3>
                     <p>{offer.description}</p>
                     <p>{offer.price} PLN</p>
+                    <p>{offer.durationMinutes} min</p>
                   </li>
                 ))}
               </ul>
@@ -240,6 +247,16 @@ function CreateListing() {
                 placeholder="e.g. 99"
                 value={offerPrice}
                 onChange={(event) => setOfferPrice(event.target.value)}
+              />
+            </label>
+            <label>
+              Duration in minutes
+              <input
+                type="number"
+                min="1"
+                placeholder="e.g. 60"
+                value={offerDurationMinutes}
+                onChange={(event) => setOfferDurationMinutes(event.target.value)}
               />
             </label>
 

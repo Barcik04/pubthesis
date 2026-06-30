@@ -11,12 +11,14 @@ type Offer = {
   description: string;
   price: number;
   createdAt: string;
+  durationMinutes: number;
 };
 
 type NewOffer = {
   name: string;
   description: string;
   price: string;
+  durationMinutes: string;
 };
 
 type Product = {
@@ -50,6 +52,7 @@ function UpdateListing() {
   const [offerName, setOfferName] = useState("");
   const [offerDescription, setOfferDescription] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
+  const [offerDurationMinutes, setOfferDurationMinutes] = useState("");
 
   function handleOpenOfferPopup() {
     setIsOfferPopupOpen(true);
@@ -64,7 +67,9 @@ function UpdateListing() {
     if (
       offerName.trim().length === 0 ||
       offerDescription.trim().length === 0 ||
-      offerPrice.trim().length === 0
+      offerPrice.trim().length === 0 ||
+      offerDurationMinutes.trim().length === 0
+
     ) {
       setError("Fill all offer fields");
       return;
@@ -76,12 +81,14 @@ function UpdateListing() {
         name: offerName,
         description: offerDescription,
         price: offerPrice,
+        durationMinutes: offerDurationMinutes,
       },
     ]);
 
     setOfferName("");
     setOfferDescription("");
     setOfferPrice("");
+    setOfferDurationMinutes("");
     setIsOfferPopupOpen(false);
     setError("");
   }
@@ -116,6 +123,7 @@ function UpdateListing() {
           name: offer.name,
           description: offer.description,
           price: Number(offer.price),
+          durationMinutes: Number(offer.durationMinutes),
         });
       }
 
@@ -214,6 +222,7 @@ function UpdateListing() {
                     <h3>{offer.name}</h3>
                     <p>{offer.description}</p>
                     <p>{offer.price} PLN</p>
+                    <p>{offer.durationMinutes} minutes</p>
                   </li>
                 ))}
 
@@ -263,7 +272,7 @@ function UpdateListing() {
           {error && <p className="error">{error}</p>}
 
           <button className="submit-btn" type="submit">
-            Create listing
+            Update listing
           </button>
         </form>
       </section>
@@ -306,6 +315,16 @@ function UpdateListing() {
               />
             </label>
 
+            <label>
+              Duration minutes
+              <input
+                type="number"
+                min="1"
+                placeholder="e.g. 60"
+                value={offerDurationMinutes}
+                onChange={(event) => setOfferDurationMinutes(event.target.value)}
+              />
+            </label>
             <button
               type="button"
               className="submit-btn"

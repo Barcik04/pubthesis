@@ -255,6 +255,7 @@ export type ProductOffer = {
   description: string;
   price: number;
   createdAt: string;
+  durationMinutes: number;
 };
 
 export type ProductDetails = {
@@ -287,6 +288,7 @@ type ProductOfferCreateData = {
   name: string;
   description: string;
   price: number;
+  durationMinutes: number;
 };
 
 export async function createProductOffer(
@@ -310,6 +312,47 @@ export async function createProductOffer(
 
   if (!response.ok) {
     throw new Error("Failed to create product offer");
+  }
+
+  return response.json();
+}
+
+
+
+
+export type ReservationCreateData = {
+  productOfferId: number;
+  startTime: string;
+};
+
+export type ReservationResult = {
+  id: number;
+  createdAt: string;
+  paid: boolean;
+  startTime: string;
+  endTime: string;
+};
+
+export async function createReservation(
+  data: ReservationCreateData
+): Promise<ReservationResult> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch("http://localhost:8080/reservations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create reservation");
   }
 
   return response.json();

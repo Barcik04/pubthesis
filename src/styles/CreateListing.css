@@ -150,19 +150,16 @@
 .offers-wrapper { 
     display: flex;
     flex-direction: row;
-    transform: translate(-300px, 45px);
+    margin: 10px 0 10px 0;
 }
 
 .offers-section {
+  display: flex;
+  flex-direction: column;
   width: 100%;
 }
 
-.offers-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-}
+
 
 .offers-wrapper h2 {
   margin: 0;

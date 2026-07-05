@@ -1,56 +1,157 @@
 .reservation-page {
-  min-height: 100vh;
-  padding: 40px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  padding-top: 60px;
 }
 
-.reservation-card {
-  width: 100%;
+.calendar {
+  width: 600px;
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
   margin-top: 100px;
-  max-width: 500px;
-  padding: 32px;
-  border-radius: 16px;
-  background-color: white;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.reservation-card h1 {
-  margin-bottom: 12px;
-}
-
-.reservation-form {
+.calendar-header {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-.reservation-form label {
+.calendar-header h1 {
+  margin: 0;
+  font-size: 26px;
+  text-transform: capitalize;
+}
+
+.calendar-header button {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.calendar-header button:hover {
+  background: #1d4ed8;
+}
+
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  text-align: center;
+}
+
+.weekdays {
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #64748b;
+}
+
+.day {
+  height: 60px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #f1f5f9;
   font-weight: 600;
 }
 
-.reservation-form input {
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 15px;
+.day:empty {
+  background: transparent;
 }
 
-.reservation-form button {
-  margin-top: 10px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #1d4ed8;
+.today {
+  background: #2563eb;
   color: white;
+}
+
+
+
+.day {
+  border: none;
+  cursor: pointer;
+}
+
+.day:disabled {
+  cursor: default;
+}
+
+.popup-background {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.popup {
+  width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: white;
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  margin-top: 60px;
+}
+
+.popup h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.slots {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.slot-button {
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  background: #eef2ff;
   font-weight: 600;
   cursor: pointer;
 }
 
-.reservation-form button:hover {
-  background-color: #374151;
+.slot-button:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.close-button {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: #111827;
+  color: white;
+  cursor: pointer;
+}
+
+
+
+.reserved-slot {
+  text-decoration: line-through;
+  background: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.reserved-slot:hover {
+  background: #e5e7eb;
+  color: #6b7280;
 }

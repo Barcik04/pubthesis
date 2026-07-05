@@ -230,9 +230,105 @@
   font-family: inherit;
 }
 
+
+
+
+
+
+
+.day-row {
+  margin-bottom: 10px;
+}
+
+.offer-popup .day-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: fit-content;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.offer-popup .day-label span {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.offer-popup .day-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.available-days {
+  font-size: 25px;
+  margin-bottom: 14px;
+}
+
+.form-row {
+    margin-bottom: 37px;
+}
+
+
+
+
+
+
 .offer-object {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 14px;
+  padding: 14px 16px;
   margin-bottom: 12px;
+  background: #ffffff;
+}
+
+.offer-main-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 0.8fr 0.8fr;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.offer-main-row h3,
+.offer-main-row p {
+  margin: 0;
+}
+
+.offer-expand-btn {
+  align-self: flex-start;
+  width: fit-content;
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  cursor: pointer;
+  font-weight: 700;
+  color: #111827;
+}
+
+.offer-expand-btn:hover {
+  color: #2563eb;
+}
+
+.offer-availabilities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.offer-availabilities p {
+  margin: 0;
+  color: #374151;
 }

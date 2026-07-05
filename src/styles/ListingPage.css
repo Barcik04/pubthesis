@@ -89,7 +89,7 @@
   font-size: 50px;
 }
 
-.offers-list {
+.offers-list-listing {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -101,7 +101,7 @@
   flex-direction: column;
 }
 
-.offer-object {
+.offer-object-listing {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -113,20 +113,20 @@
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.offer-object:hover {
+.offer-object-listing:hover {
   transform: translateY(-3px);
 }
 
-.offer-object:last-child {
+.offer-object-listing:last-child {
   margin-bottom: 0;
 }
 
-.offer-object h3 {
+.offer-object-listing h3 {
   margin: 0 0 8px;
   font-size: 18px;
 }
 
-.offer-object p {
+.offer-object-listing p {
   margin: 4px 0;
   color: #4b5563;
 }

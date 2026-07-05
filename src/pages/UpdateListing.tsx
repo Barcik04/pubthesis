@@ -1,17 +1,36 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { createProductOffer, updateProduct } from "../api/productsApi";
+import {
+  createProductOffer,
+  createProductOfferAvailability,
+  updateProduct,
+} from "../api/productsApi";
 import "../styles/CreateListing.css";
 
 import plus from "../photos/plus.png";
+
+type OfferAvailability = {
+  id: number;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+};
 
 type Offer = {
   id: number;
   name: string;
   description: string;
   price: number;
-  createdAt: string;
-  durationMinutes: number;
+  createdAt?: string;
+  duration?: number;
+  durationMinutes?: number;
+  availabilities: OfferAvailability[];
+};
+
+type AvailabilityInput = {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
 };
 
 type NewOffer = {
@@ -19,6 +38,7 @@ type NewOffer = {
   description: string;
   price: string;
   durationMinutes: string;
+  availabilities: AvailabilityInput[];
 };
 
 type Product = {
@@ -45,6 +65,7 @@ function UpdateListing() {
   const [price, setPrice] = useState(product?.price?.toString() ?? "");
   const [types, setTypes] = useState(product?.types?.join(", ") ?? "");
   const [image, setImage] = useState<File | null>(null);
+  const [expandedOfferKey, setExpandedOfferKey] = useState<string | null>(null);
 
   const [newOffers, setNewOffers] = useState<NewOffer[]>([]);
 
@@ -53,6 +74,29 @@ function UpdateListing() {
   const [offerDescription, setOfferDescription] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [offerDurationMinutes, setOfferDurationMinutes] = useState("");
+  const DAYS_OF_WEEK = [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+  ];
+
+  const DAY_LABELS: Record<string, string> = {
+    MONDAY: "Monday",
+    TUESDAY: "Tuesday",
+    WEDNESDAY: "Wednesday",
+    THURSDAY: "Thursday",
+    FRIDAY: "Friday",
+    SATURDAY: "Saturday",
+    SUNDAY: "Sunday",
+  };
+
+  const [offerAvailabilities, setOfferAvailabilities] = useState<
+    AvailabilityInput[]
+  >([]);
 
   function handleOpenOfferPopup() {
     setIsOfferPopupOpen(true);
@@ -63,16 +107,75 @@ function UpdateListing() {
     setIsOfferPopupOpen(false);
   }
 
-  function handleAddOfferToLocalList() {
+  function handleToggleAvailabilityDay(dayOfWeek: string) {
+    const dayAlreadySelected = offerAvailabilities.some(
+      (availability) => availability.dayOfWeek === dayOfWeek
+    );
+
+    if (dayAlreadySelected) {
+      setOfferAvailabilities(
+        offerAvailabilities.filter(
+          (availability) => availability.dayOfWeek !== dayOfWeek
+        )
+      );
+      return;
+    }
+
+    setOfferAvailabilities([
+      ...offerAvailabilities,
+      {
+        dayOfWeek,
+        startTime: "",
+        endTime: "",
+      },
+    ]);
+  }
+
+  function handleAvailabilityTimeChange(
+    dayOfWeek: string,
+    field: "startTime" | "endTime",
+    value: string
+  ) {
+    setOfferAvailabilities(
+      offerAvailabilities.map((availability) =>
+        availability.dayOfWeek === dayOfWeek
+          ? { ...availability, [field]: value }
+          : availability
+      )
+    );
+  }
+
+
+
+function handleAddOfferToLocalList() {
     if (
       offerName.trim().length === 0 ||
       offerDescription.trim().length === 0 ||
       offerPrice.trim().length === 0 ||
       offerDurationMinutes.trim().length === 0
-
     ) {
       setError("Fill all offer fields");
       return;
+    }
+
+    if (offerAvailabilities.length === 0) {
+      setError("Choose at least one available day");
+      return;
+    }
+
+    for (const availability of offerAvailabilities) {
+      if (
+        availability.startTime.trim().length === 0 ||
+        availability.endTime.trim().length === 0
+      ) {
+        setError("Fill start and end time for every selected day");
+        return;
+      }
+
+      if (availability.endTime <= availability.startTime) {
+        setError("End time must be after start time");
+        return;
+      }
     }
 
     setNewOffers([
@@ -82,6 +185,7 @@ function UpdateListing() {
         description: offerDescription,
         price: offerPrice,
         durationMinutes: offerDurationMinutes,
+        availabilities: offerAvailabilities,
       },
     ]);
 
@@ -89,6 +193,7 @@ function UpdateListing() {
     setOfferDescription("");
     setOfferPrice("");
     setOfferDurationMinutes("");
+    setOfferAvailabilities([]);
     setIsOfferPopupOpen(false);
     setError("");
   }
@@ -119,15 +224,25 @@ function UpdateListing() {
       await updateProduct(parsedProductId, data, image);
 
       for (const offer of newOffers) {
-        await createProductOffer(parsedProductId, {
+        const createdOffer = await createProductOffer(parsedProductId, {
           name: offer.name,
           description: offer.description,
           price: Number(offer.price),
           durationMinutes: Number(offer.durationMinutes),
         });
+
+        for (const availability of offer.availabilities) {
+          await createProductOfferAvailability({
+            dayOfWeek: availability.dayOfWeek,
+            startTime: availability.startTime,
+            endTime: availability.endTime,
+            offerId: createdOffer.id,
+          });
+        }
       }
 
       navigate("/user");
+
     } catch (err) {
       setError("Failed to update listing");
     }
@@ -216,24 +331,88 @@ function UpdateListing() {
             {product.offers.length === 0 && newOffers.length === 0 ? (
               <p>No offers yet</p>
             ) : (
-              <ul className="offers-list">
-                {product.offers.map((offer) => (
-                  <li className="offer-object" key={offer.id}>
-                    <h3>{offer.name}</h3>
-                    <p>{offer.description}</p>
-                    <p>{offer.price} PLN</p>
-                    <p>{offer.durationMinutes} minutes</p>
-                  </li>
-                ))}
+            <ul className="offers-list">
+              {product.offers.map((offer) => {
+                const offerKey = `existing-${offer.id}`;
+                const isExpanded = expandedOfferKey === offerKey;
 
-                {newOffers.map((offer, index) => (
-                  <li className="offer-object" key={`new-offer-${index}`}>
-                    <h3>{offer.name}</h3>
-                    <p>{offer.description}</p>
-                    <p>{offer.price} PLN</p>
+                return (
+                  <li className="offer-object" key={offerKey}>
+                    <div className="offer-main-row">
+                      <h3>{offer.name}</h3>
+                      <p>{offer.description}</p>
+                      <p>{offer.price} PLN</p>
+                      <p>{offer.duration ?? offer.durationMinutes} minutes</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="offer-expand-btn"
+                      onClick={() => setExpandedOfferKey(isExpanded ? null : offerKey)}
+                    >
+                      {isExpanded ? "▲ Hide availability" : "▼ Show availability"}
+                    </button>
+
+                    {isExpanded && (
+                      <div className="offer-availabilities">
+                        {offer.availabilities.length === 0 ? (
+                          <p>No availability ranges</p>
+                        ) : (
+                          <>
+                            <p>Available time ranges:</p>
+
+                            {offer.availabilities.map((availability) => (
+                              <p key={availability.id}>
+                                {DAY_LABELS[availability.dayOfWeek] ?? availability.dayOfWeek}:{" "}
+                                {availability.startTime.slice(0, 5)} -{" "}
+                                {availability.endTime.slice(0, 5)}
+                              </p>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    )}
                   </li>
-                ))}
-              </ul>
+                );
+              })}
+
+              {newOffers.map((offer, index) => {
+                const offerKey = `new-${index}`;
+                const isExpanded = expandedOfferKey === offerKey;
+
+                return (
+                  <li className="offer-object" key={offerKey}>
+                    <div className="offer-main-row">
+                      <h3>{offer.name}</h3>
+                      <p>{offer.description}</p>
+                      <p>{offer.price} PLN</p>
+                      <p>{offer.durationMinutes} minutes</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="offer-expand-btn"
+                      onClick={() => setExpandedOfferKey(isExpanded ? null : offerKey)}
+                    >
+                      {isExpanded ? "▲ Hide availability" : "▼ Show availability"}
+                    </button>
+
+                    {isExpanded && (
+                      <div className="offer-availabilities">
+                        <p>Available time ranges:</p>
+
+                        {offer.availabilities.map((availability) => (
+                          <p key={availability.dayOfWeek}>
+                            {DAY_LABELS[availability.dayOfWeek] ?? availability.dayOfWeek}:{" "}
+                            {availability.startTime} - {availability.endTime}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
             )}
           </div>
 
@@ -322,9 +501,70 @@ function UpdateListing() {
                 min="1"
                 placeholder="e.g. 60"
                 value={offerDurationMinutes}
-                onChange={(event) => setOfferDurationMinutes(event.target.value)}
+                onChange={(event) =>
+                  setOfferDurationMinutes(event.target.value)
+                }
               />
             </label>
+
+            <div>
+              <p className="available-days">Available days</p>
+
+              {DAYS_OF_WEEK.map((day) => {
+                const availability = offerAvailabilities.find(
+                  (item) => item.dayOfWeek === day
+                );
+
+                return (
+                  <div className="day-row" key={day}>
+                    <label className="day-label">
+                      <input
+                        className="day-checkbox"
+                        type="checkbox"
+                        checked={Boolean(availability)}
+                        onChange={() => handleToggleAvailabilityDay(day)}
+                      />
+                      <span>{DAY_LABELS[day]}</span>
+                    </label>
+
+                    {availability && (
+                      <div className="form-row">
+                        <label>
+                          Start time
+                          <input
+                            type="time"
+                            value={availability.startTime}
+                            onChange={(event) =>
+                              handleAvailabilityTimeChange(
+                                day,
+                                "startTime",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          End time
+                          <input
+                            type="time"
+                            value={availability.endTime}
+                            onChange={(event) =>
+                              handleAvailabilityTimeChange(
+                                day,
+                                "endTime",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
             <button
               type="button"
               className="submit-btn"

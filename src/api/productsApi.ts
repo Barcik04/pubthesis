@@ -254,8 +254,10 @@ export type ProductOffer = {
   name: string;
   description: string;
   price: number;
-  createdAt: string;
-  durationMinutes: number;
+  createdAt?: string;
+  duration?: number;
+
+  availabilities: ProductOfferAvailability[];
 };
 
 export type ProductDetails = {
@@ -353,6 +355,140 @@ export async function createReservation(
 
   if (!response.ok) {
     throw new Error("Failed to create reservation");
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export type ProductOfferAvailabilityCreateData = {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  offerId: number;
+};
+
+export type ProductOfferAvailability = {
+  id: number;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+};
+
+export async function createProductOfferAvailability(
+  data: ProductOfferAvailabilityCreateData
+): Promise<ProductOfferAvailability> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch("http://localhost:8080/availability", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create product offer availability");
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+const RESERVATIONS_API_URL = "http://localhost:8080/reservations";
+
+export type ReservationDate = {
+  startTime: string;
+  endTime: string;
+};
+
+export async function getReservationsByOfferId(
+  offerId: number
+): Promise<ReservationDate[]> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(`${RESERVATIONS_API_URL}/${offerId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch reservations");
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+const OFFERS_API_URL = "http://localhost:8080/offers";
+
+export type ProductOfferAvailabilityGet = {
+  id: number;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+};
+
+export type ProductOfferDetails = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  availabilities: ProductOfferAvailabilityGet[];
+};
+
+export async function getOfferById(
+  offerId: number
+): Promise<ProductOfferDetails> {
+  const response = await fetch(`${OFFERS_API_URL}/${offerId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch offer");
   }
 
   return response.json();

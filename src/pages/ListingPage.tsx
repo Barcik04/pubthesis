@@ -88,14 +88,14 @@ function ListingPage() {
           {product.offers.length === 0 ? (
             <p>No offers yet</p>
           ) : (
-            <ul className="offers-list">
+            <ul className="offers-list-listing">
               {product.offers.map((offer) => (
-                <li className="offer-object" key={offer.id}>
+                <li className="offer-object-listing" key={offer.id}>
                   <div className="offer-info">
                     <h3>{offer.name}</h3>
                     <p>{offer.description}</p>
                     <p>{offer.price} PLN</p>
-                    <p>{offer.durationMinutes} min</p>
+                    <p>{offer.duration} min</p>
                   </div>
                   <Link to={`/reservation/${offer.id}`} className="offer-check-button">
                     Check

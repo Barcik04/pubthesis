@@ -281,12 +281,13 @@
 
 
 .offer-object {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 18px 70px 14px 16px;
   margin-bottom: 12px;
   background: #ffffff;
 }
@@ -331,4 +332,83 @@
 .offer-availabilities p {
   margin: 0;
   color: #374151;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.offer-content-create-listing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.buttons-wrap-create-listing {
+  position: absolute;
+  top: 9px;
+  right: 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.offer-object:hover .buttons-wrap-create-listing {
+  opacity: 1;
+  visibility: visible;
+}
+
+.edit-offer-button-create-listing,
+.delete-offer-button-create-listing {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.edit-offer-button-create-listing {
+  background: #111827;
+}
+
+.edit-offer-button-create-listing:hover {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
+.delete-offer-button-create-listing {
+  background: #991b1b;
+}
+
+.delete-offer-button-create-listing:hover {
+  background: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+.edit-offer-button-create-listing img,
+.delete-offer-button-create-listing img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: invert(1);
 }

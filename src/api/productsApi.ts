@@ -437,17 +437,8 @@ export type ReservationDate = {
 export async function getReservationsByOfferId(
   offerId: number
 ): Promise<ReservationDate[]> {
-  const token = localStorage.getItem("accessToken");
-
-  if (!token) {
-    throw new Error("User is not authenticated");
-  }
-
   const response = await fetch(`${RESERVATIONS_API_URL}/${offerId}`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {
@@ -492,4 +483,88 @@ export async function getOfferById(
   }
 
   return response.json();
+}
+
+
+
+
+
+
+
+
+
+export type ProductOfferAvailabilityUpdateData = {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+};
+
+export type ProductOfferUpdateData = {
+  name: string;
+  description: string;
+  price: number;
+  durationMinutes: number;
+  availabilities: ProductOfferAvailabilityUpdateData[];
+};
+
+export type ProductOfferUpdateResult = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  durationMinutes: number;
+  availabilities: ProductOfferAvailability[];
+};
+
+export async function updateProductOffer(
+  offerId: number,
+  data: ProductOfferUpdateData
+): Promise<ProductOfferUpdateResult> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(`${OFFERS_API_URL}/${offerId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update product offer");
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+
+export async function deleteProductOffer(offerId: number): Promise<void> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(`${OFFERS_API_URL}/${offerId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete product offer");
+  }
 }

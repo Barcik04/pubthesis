@@ -3,11 +3,15 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   createProductOffer,
   createProductOfferAvailability,
+  deleteProductOffer,
   updateProduct,
+  updateProductOffer,
 } from "../api/productsApi";
 import "../styles/CreateListing.css";
 
 import plus from "../photos/plus.png";
+import bin from "../photos/bin.png";
+import edit from "../photos/edit.png";
 
 type OfferAvailability = {
   id: number;
@@ -66,8 +70,10 @@ function UpdateListing() {
   const [types, setTypes] = useState(product?.types?.join(", ") ?? "");
   const [image, setImage] = useState<File | null>(null);
   const [expandedOfferKey, setExpandedOfferKey] = useState<string | null>(null);
+  const [offers, setOffers] = useState<Offer[]>(product?.offers ?? []);
 
   const [newOffers, setNewOffers] = useState<NewOffer[]>([]);
+  const [editingOfferId, setEditingOfferId] = useState<number | null>(null);
 
   const [isOfferPopupOpen, setIsOfferPopupOpen] = useState(false);
   const [offerName, setOfferName] = useState("");
@@ -99,12 +105,48 @@ function UpdateListing() {
   >([]);
 
   function handleOpenOfferPopup() {
+    setEditingOfferId(null);
+    setOfferName("");
+    setOfferDescription("");
+    setOfferPrice("");
+    setOfferDurationMinutes("");
+    setOfferAvailabilities([]);
+    setIsOfferPopupOpen(true);
+    setError("");
+  }
+
+  function handleOpenEditOfferPopup(offer: Offer) {
+    setEditingOfferId(offer.id);
+    setOfferName(offer.name);
+    setOfferDescription(offer.description);
+    setOfferPrice(offer.price.toString());
+    setOfferDurationMinutes(
+      (offer.durationMinutes ?? offer.duration ?? "").toString()
+    );
+    setOfferAvailabilities(
+      offer.availabilities.map((availability) => ({
+        dayOfWeek: availability.dayOfWeek,
+        startTime: availability.startTime.slice(0, 5),
+        endTime: availability.endTime.slice(0, 5),
+      }))
+    );
     setIsOfferPopupOpen(true);
     setError("");
   }
 
   function handleCloseOfferPopup() {
     setIsOfferPopupOpen(false);
+    setEditingOfferId(null);
+  }
+
+  async function handleDeleteOffer(offerId: number) {
+    try {
+      setError("");
+      await deleteProductOffer(offerId);
+      setOffers(offers.filter((offer) => offer.id !== offerId));
+    } catch (err) {
+      setError("Failed to delete offer");
+    }
   }
 
   function handleToggleAvailabilityDay(dayOfWeek: string) {
@@ -147,7 +189,7 @@ function UpdateListing() {
 
 
 
-function handleAddOfferToLocalList() {
+async function handleAddOfferToLocalList() {
     if (
       offerName.trim().length === 0 ||
       offerDescription.trim().length === 0 ||
@@ -178,16 +220,37 @@ function handleAddOfferToLocalList() {
       }
     }
 
-    setNewOffers([
-      ...newOffers,
-      {
-        name: offerName,
-        description: offerDescription,
-        price: offerPrice,
-        durationMinutes: offerDurationMinutes,
-        availabilities: offerAvailabilities,
-      },
-    ]);
+    if (editingOfferId !== null) {
+      try {
+        const updatedOffer = await updateProductOffer(editingOfferId, {
+          name: offerName,
+          description: offerDescription,
+          price: Number(offerPrice),
+          durationMinutes: Number(offerDurationMinutes),
+          availabilities: offerAvailabilities,
+        });
+
+        setOffers(
+          offers.map((offer) =>
+            offer.id === editingOfferId ? updatedOffer : offer
+          )
+        );
+      } catch (err) {
+        setError("Failed to update offer");
+        return;
+      }
+    } else {
+      setNewOffers([
+        ...newOffers,
+        {
+          name: offerName,
+          description: offerDescription,
+          price: offerPrice,
+          durationMinutes: offerDurationMinutes,
+          availabilities: offerAvailabilities,
+        },
+      ]);
+    }
 
     setOfferName("");
     setOfferDescription("");
@@ -195,6 +258,7 @@ function handleAddOfferToLocalList() {
     setOfferDurationMinutes("");
     setOfferAvailabilities([]);
     setIsOfferPopupOpen(false);
+    setEditingOfferId(null);
     setError("");
   }
 
@@ -328,21 +392,41 @@ function handleAddOfferToLocalList() {
               </button>
             </div>
 
-            {product.offers.length === 0 && newOffers.length === 0 ? (
+            {offers.length === 0 && newOffers.length === 0 ? (
               <p>No offers yet</p>
             ) : (
             <ul className="offers-list">
-              {product.offers.map((offer) => {
+              {offers.map((offer) => {
                 const offerKey = `existing-${offer.id}`;
                 const isExpanded = expandedOfferKey === offerKey;
 
                 return (
                   <li className="offer-object" key={offerKey}>
-                    <div className="offer-main-row">
-                      <h3>{offer.name}</h3>
-                      <p>{offer.description}</p>
-                      <p>{offer.price} PLN</p>
-                      <p>{offer.duration ?? offer.durationMinutes} minutes</p>
+                    <div className="offer-content-create-listing">
+                      <div className="offer-main-row">
+                        <h3>{offer.name}</h3>
+                        <p>{offer.description}</p>
+                        <p>{offer.price} PLN</p>
+                        <p>{offer.duration ?? offer.durationMinutes} minutes</p>
+                      </div>
+
+                      <div className="buttons-wrap-create-listing">
+                        <button
+                          type="button"
+                          className="edit-offer-button-create-listing"
+                          onClick={() => handleOpenEditOfferPopup(offer)}
+                        >
+                          <img src={edit} alt="edit offer" />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="delete-offer-button-create-listing"
+                          onClick={() => handleDeleteOffer(offer.id)}
+                        >
+                          <img src={bin} alt="delete offer" />
+                        </button>
+                      </div>
                     </div>
 
                     <button
@@ -462,7 +546,7 @@ function handleAddOfferToLocalList() {
             className="offer-popup"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2>Add offer</h2>
+            <h2>{editingOfferId === null ? "Add offer" : "Edit offer"}</h2>
 
             <label>
               Offer name
@@ -570,7 +654,7 @@ function handleAddOfferToLocalList() {
               className="submit-btn"
               onClick={handleAddOfferToLocalList}
             >
-              Add offer
+              {editingOfferId === null ? "Add offer" : "Save changes"}
             </button>
           </div>
         </div>

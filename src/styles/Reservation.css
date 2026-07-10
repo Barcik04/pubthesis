@@ -49,6 +49,7 @@
   text-align: center;
 }
 
+
 .weekdays {
   margin-bottom: 10px;
   font-weight: bold;
@@ -63,6 +64,13 @@
   border-radius: 14px;
   background: #f1f5f9;
   font-weight: 600;
+  transition: transform 0.1s ease;
+}
+
+.day:hover {
+  transform: scale(1.05);
+  font-weight: 900;
+  font-size: 15px;
 }
 
 .day:empty {

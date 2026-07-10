@@ -7,6 +7,8 @@ import {
 import "../styles/CreateListing.css";
 
 import plus from "../photos/plus.png";
+import bin from "../photos/bin.png";
+import edit from "../photos/edit.png";
 
 type AvailabilityInput = {
   dayOfWeek: string;
@@ -53,6 +55,7 @@ function CreateListing() {
 
   const [newOffers, setNewOffers] = useState<NewOffer[]>([]);
   const [expandedOfferKey, setExpandedOfferKey] = useState<string | null>(null);
+  const [editingOfferIndex, setEditingOfferIndex] = useState<number | null>(null);
 
   const [isOfferPopupOpen, setIsOfferPopupOpen] = useState(false);
   const [offerName, setOfferName] = useState("");
@@ -64,12 +67,46 @@ function CreateListing() {
   >([]);
 
   function handleOpenOfferPopup() {
+    setEditingOfferIndex(null);
+
+    setOfferName("");
+    setOfferDescription("");
+    setOfferPrice("");
+    setOfferDurationMinutes("");
+    setOfferAvailabilities([]);
+
     setIsOfferPopupOpen(true);
     setError("");
   }
 
+  function handleOpenEditOfferPopup(index: number) {
+    const offer = newOffers[index];
+
+    setEditingOfferIndex(index);
+
+    setOfferName(offer.name);
+    setOfferDescription(offer.description);
+    setOfferPrice(offer.price);
+    setOfferDurationMinutes(offer.durationMinutes);
+    setOfferAvailabilities(offer.availabilities);
+
+    setIsOfferPopupOpen(true);
+    setError("");
+  }
+
+  function handleDeleteOffer(index: number) {
+    setNewOffers(newOffers.filter((_, offerIndex) => offerIndex !== index));
+  }
+
   function handleCloseOfferPopup() {
     setIsOfferPopupOpen(false);
+    setEditingOfferIndex(null);
+
+    setOfferName("");
+    setOfferDescription("");
+    setOfferPrice("");
+    setOfferDurationMinutes("");
+    setOfferAvailabilities([]);
   }
 
   function handleToggleAvailabilityDay(dayOfWeek: string) {
@@ -141,16 +178,26 @@ function CreateListing() {
       }
     }
 
-    setNewOffers([
-      ...newOffers,
-      {
-        name: offerName,
-        description: offerDescription,
-        price: offerPrice,
-        durationMinutes: offerDurationMinutes,
-        availabilities: offerAvailabilities,
-      },
-    ]);
+    const offerData = {
+      name: offerName,
+      description: offerDescription,
+      price: offerPrice,
+      durationMinutes: offerDurationMinutes,
+      availabilities: offerAvailabilities,
+    };
+
+    if (editingOfferIndex !== null) {
+      setNewOffers(
+        newOffers.map((offer, index) =>
+          index === editingOfferIndex ? offerData : offer
+        )
+      );
+    } else {
+      setNewOffers([...newOffers, offerData]);
+    }
+
+    handleCloseOfferPopup();
+    setError("");
 
     setOfferName("");
     setOfferDescription("");
@@ -287,11 +334,31 @@ function CreateListing() {
 
                 return (
                   <li className="offer-object" key={offerKey}>
-                    <div className="offer-main-row">
-                      <h3>{offer.name}</h3>
-                      <p>{offer.description}</p>
-                      <p>{offer.price} PLN</p>
-                      <p>{offer.durationMinutes} minutes</p>
+                    <div className="offer-content-create-listing">
+                      <div className="offer-main-row">
+                        <h3>{offer.name}</h3>
+                        <p>{offer.description}</p>
+                        <p>{offer.price} PLN</p>
+                        <p>{offer.durationMinutes} minutes</p>
+                      </div>
+
+                      <div className="buttons-wrap-create-listing">
+                        <button
+                          type="button"
+                          className="edit-offer-button-create-listing"
+                          onClick={() => handleOpenEditOfferPopup(index)}
+                        >
+                          <img src={edit} alt="edit offer" />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="delete-offer-button-create-listing"
+                          onClick={() => handleDeleteOffer(index)}
+                        >
+                          <img src={bin} alt="delete offer" />
+                        </button>
+                      </div>
                     </div>
 
                     <button
@@ -350,7 +417,7 @@ function CreateListing() {
             className="offer-popup"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2>Add offer</h2>
+            <h2>{editingOfferIndex === null ? "Add offer" : "Edit offer"}</h2>
 
             <label>
               Offer name
@@ -458,7 +525,7 @@ function CreateListing() {
               className="submit-btn"
               onClick={handleAddOfferToLocalList}
             >
-              Add offer
+              {editingOfferIndex === null ? "Add offer" : "Save changes"}
             </button>
           </div>
         </div>

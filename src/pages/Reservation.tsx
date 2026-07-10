@@ -71,6 +71,17 @@ function Reservation() {
     return daysOfWeek[dayIndex];
   }
 
+
+  function isDayAvailable(day: number) {
+    if (!offer) return false;
+
+    const dayOfWeek = getDayOfWeek(day);
+
+    return offer.availabilities.some(
+      (availability) => availability.dayOfWeek === dayOfWeek
+    );
+  }
+
   function openPopup(day: number) {
     setSelectedDay(day);
     setSelectedDayOfWeek(getDayOfWeek(day));
@@ -194,13 +205,17 @@ function Reservation() {
               key={index}
               disabled={day === null}
               onClick={() => day && openPopup(day)}
-              className={
+              className={[
+                "day",
                 day === today.getDate() &&
                 month === today.getMonth() &&
                 year === today.getFullYear()
-                  ? "day today"
-                  : "day"
-              }
+                  ? "today"
+                  : "",
+                day !== null && !isDayAvailable(day)
+                  ? "unavailable-day"
+                  : "",
+              ].join(" ")}
             >
               {day}
             </button>

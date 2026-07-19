@@ -239,9 +239,21 @@ function User() {
                             <p>{product.description}</p>
                             <p className="product-price-user">od {product.price} PLN</p>
                         </div>
-                        <Link to={`/listing-page/${product.id}`} className="details-button">
-                        View details
+                        <div className="details-buttons-wrap-user">
+                        <Link
+                            to={`/listing-page/${product.id}`}
+                            className="details-button-user"
+                        >
+                            View details
                         </Link>
+
+                        <Link
+                            to={`/manage-reservations/${product.id}`}
+                            className="details-button-user"
+                        >
+                            Manage reservations
+                        </Link>
+                        </div>
                         <div className="buttons-wrap-user">
                             <Link
                                 to={`/update-listing/${product.id}`}
@@ -275,6 +287,9 @@ function User() {
                 <aside className="right-list-user">
                     <Link to="/create-listing" className="create-listing-button-user">
                         Create listing
+                    </Link>
+                    <Link to="/my-reservations" className="create-listing-button-user">
+                        My Reservations
                     </Link>
                 </aside>
                 

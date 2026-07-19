@@ -568,3 +568,194 @@ export async function deleteProductOffer(offerId: number): Promise<void> {
     throw new Error("Failed to delete product offer");
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+export type MyReservation = {
+  id: number;
+  createdAt: string;
+  paid: boolean;
+  startTime: string;
+  endTime: string;
+  productId: number;
+};
+
+export async function getMyReservations(): Promise<MyReservation[]> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(
+    `${RESERVATIONS_API_URL}/my-reservations`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user reservations");
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+export async function cancelReservation(
+  reservationId: number
+): Promise<void> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(
+    `${RESERVATIONS_API_URL}/cancel/${reservationId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to cancel reservation");
+  }
+}
+
+
+
+
+
+
+
+export type ReservationWithOffer = {
+  id: number;
+  createdAt: string;
+  paid: boolean;
+  startTime: string;
+  endTime: string;
+  username: string;
+  productName: string;
+  durationMinutes: number;
+  offerDescription: string;
+  offerName: string;
+  offerPrice: number;
+};
+
+export type PageResponse<T> = {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+};
+
+export type ReservationFilters = {
+  username: string;
+  offerName: string;
+  durationMinutes: number | null;
+};
+
+export async function getReservationsByProductId(
+  productId: number,
+  page: number = 0,
+  size: number = 20,
+  filters: ReservationFilters = {
+    username: "",
+    offerName: "",
+    durationMinutes: null,
+  }
+): Promise<PageResponse<ReservationWithOffer>> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+
+  if (filters.username.trim()) {
+    params.append("username", filters.username.trim());
+  }
+
+  if (filters.offerName.trim()) {
+    params.append("offerName", filters.offerName.trim());
+  }
+
+  if (filters.durationMinutes !== null) {
+    params.append(
+      "durationMinutes",
+      filters.durationMinutes.toString()
+    );
+  }
+
+  const response = await fetch(
+    `${RESERVATIONS_API_URL}/by-product/${productId}?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch product reservations");
+  }
+
+  return response.json();
+}
+
+
+
+
+export async function revokeReservation(
+  reservationId: number
+): Promise<void> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(
+    `${RESERVATIONS_API_URL}/revoke/${reservationId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to revoke reservation");
+  }
+}

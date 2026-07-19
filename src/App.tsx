@@ -6,6 +6,8 @@ import User from "./pages/User";
 import CreateListing from "./pages/CreateListing";
 import UpdateListing from "./pages/UpdateListing";
 import Reservation from "./pages/Reservation";
+import MyReservations from "./pages/MyReservations";
+import ManageReservations from "./pages/ManageReservations";
 
 import Navbar from "./components/Navbar";
 import ListingPage from "./pages/ListingPage";
@@ -27,6 +29,8 @@ function App() {
         <Route path="/update-listing/:productId" element={<UpdateListing />} />
         <Route path="/listing-page/:productId" element={<ListingPage />} />
         <Route path="/reservation/:offerId" element={<Reservation />} />
+        <Route path="/my-reservations" element={<MyReservations />} />
+        <Route path="/manage-reservations/:productId"element={<ManageReservations />} />
       </Routes>
     </>
   );

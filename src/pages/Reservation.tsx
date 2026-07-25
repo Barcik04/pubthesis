@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "../styles/Reservation.css";
 import { getOfferById, getReservationsByOfferId, createReservation, type ProductOfferDetails, type ReservationDate} from "../api/productsApi";
 
 function Reservation() {
   const { offerId } = useParams();
+  const navigate = useNavigate();
 
   const today = new Date();
 
@@ -108,6 +109,16 @@ function Reservation() {
   async function handleReservation(slotStart: string) {
     if (!offerId || !selectedDay) return;
 
+    const startTime = `${getSelectedDate()}T${slotStart}:00`;
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      navigate(
+        `/guest-reservation/${offerId}?startTime=${encodeURIComponent(startTime)}`
+      );
+      return;
+    }
+
     const confirmed = window.confirm(
       `Czy na pewno chcesz zarezerwować termin ${slotStart} dnia ${selectedDay}.${month + 1}.${year}?`
     );
@@ -115,18 +126,27 @@ function Reservation() {
     if (!confirmed) return;
 
     try {
-      const startTime = `${getSelectedDate()}T${slotStart}:00`;
-
       await createReservation({
         productOfferId: Number(offerId),
         startTime,
       });
 
-      const updatedReservations = await getReservationsByOfferId(Number(offerId));
+      const updatedReservations = await getReservationsByOfferId(
+        Number(offerId)
+      );
+
       setReservations(updatedReservations);
 
       alert("Rezerwacja została utworzona");
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.status === 401) {
+        localStorage.removeItem("accessToken");
+        navigate(
+          `/guest-reservation/${offerId}?startTime=${encodeURIComponent(startTime)}`
+        );
+        return;
+      }
+
       alert("Nie udało się utworzyć rezerwacji");
     }
   }

@@ -19,7 +19,8 @@ function ManageReservations() {
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
   const [offerName, setOfferName] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const pageSize = 20;
 
@@ -41,7 +42,8 @@ function ManageReservations() {
           {
             username,
             offerName,
-            durationMinutes,
+            firstName,
+            lastName,
           }
         );
 
@@ -60,7 +62,8 @@ function ManageReservations() {
     page,
     username,
     offerName,
-    durationMinutes,
+    firstName,
+    lastName,
   ]);
 
   async function handleRevokeReservation(reservationId: number) {
@@ -108,7 +111,8 @@ function ManageReservations() {
     setPage(0);
     setUsername("");
     setOfferName("");
-    setDurationMinutes(null);
+    setFirstName("");
+    setLastName("");
   }
 
   return (
@@ -151,19 +155,24 @@ function ManageReservations() {
           />
 
           <input
-            type="number"
-            min="1"
-            value={durationMinutes ?? ""}
-            placeholder="Duration in minutes"
-            className="manage-filter-input manage-duration-input"
+            type="text"
+            value={firstName}
+            placeholder="Search by first name..."
+            className="manage-filter-input"
             onChange={(event) => {
               setPage(0);
+              setFirstName(event.target.value);
+            }}
+          />
 
-              setDurationMinutes(
-                event.target.value === ""
-                  ? null
-                  : Number(event.target.value)
-              );
+          <input
+            type="text"
+            value={lastName}
+            placeholder="Search by last name..."
+            className="manage-filter-input"
+            onChange={(event) => {
+              setPage(0);
+              setLastName(event.target.value);
             }}
           />
 
@@ -174,7 +183,8 @@ function ManageReservations() {
             disabled={
               username === "" &&
               offerName === "" &&
-              durationMinutes === null
+              firstName === "" &&
+              lastName === ""
             }
           >
             Clear
@@ -250,8 +260,10 @@ function ManageReservations() {
                   </div>
 
                   <div>
-                    <span>Reservation ID</span>
-                    <strong>#{reservation.id}</strong>
+                    <span>Name</span>
+                    <strong>
+                      {reservation.firstName} {reservation.lastName}
+                    </strong>
                   </div>
                 </div>
 
@@ -274,31 +286,29 @@ function ManageReservations() {
           </ul>
         )}
 
-        {totalPages > 1 && (
-          <div className="manage-pagination">
-            <button
-              type="button"
-              onClick={goToPreviousPage}
-              disabled={page === 0}
-              className="manage-pagination-button"
-            >
-              &lt;
-            </button>
+        <div className="manage-pagination">
+          <button
+            type="button"
+            onClick={goToPreviousPage}
+            disabled={page === 0}
+            className="manage-pagination-button"
+          >
+            &lt;
+          </button>
 
-            <span className="manage-pagination-info">
-              Page {page + 1} of {totalPages}
-            </span>
+          <span className="manage-pagination-info">
+            Page {page + 1} of {Math.max(totalPages, 1)}
+          </span>
 
-            <button
-              type="button"
-              onClick={goToNextPage}
-              disabled={page >= totalPages - 1}
-              className="manage-pagination-button"
-            >
-              &gt;
-            </button>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={goToNextPage}
+            disabled={page >= totalPages - 1}
+            className="manage-pagination-button"
+          >
+            &gt;
+          </button>
+        </div>
       </section>
     </main>
   );

@@ -335,6 +335,8 @@ export type ReservationResult = {
   endTime: string;
 };
 
+
+
 export async function createReservation(
   data: ReservationCreateData
 ): Promise<ReservationResult> {
@@ -354,7 +356,9 @@ export async function createReservation(
   });
 
   if (!response.ok) {
-    throw new Error("Failed to create reservation");
+    const error = new Error("Failed to create reservation") as Error & { status?: number };
+    error.status = response.status;
+    throw error;
   }
 
   return response.json();
@@ -660,6 +664,15 @@ export type ReservationWithOffer = {
   offerDescription: string;
   offerName: string;
   offerPrice: number;
+  firstName: string;
+  lastName: string;
+};
+
+export type ReservationFilters = {
+  username: string;
+  offerName: string;
+  firstName: string;
+  lastName: string;
 };
 
 export type PageResponse<T> = {
@@ -674,12 +687,6 @@ export type PageResponse<T> = {
   empty: boolean;
 };
 
-export type ReservationFilters = {
-  username: string;
-  offerName: string;
-  durationMinutes: number | null;
-};
-
 export async function getReservationsByProductId(
   productId: number,
   page: number = 0,
@@ -687,7 +694,8 @@ export async function getReservationsByProductId(
   filters: ReservationFilters = {
     username: "",
     offerName: "",
-    durationMinutes: null,
+    firstName: "",
+    lastName: "",
   }
 ): Promise<PageResponse<ReservationWithOffer>> {
   const token = localStorage.getItem("accessToken");
@@ -709,11 +717,12 @@ export async function getReservationsByProductId(
     params.append("offerName", filters.offerName.trim());
   }
 
-  if (filters.durationMinutes !== null) {
-    params.append(
-      "durationMinutes",
-      filters.durationMinutes.toString()
-    );
+  if (filters.firstName.trim()) {
+    params.append("firstName", filters.firstName.trim());
+  }
+
+  if (filters.lastName.trim()) {
+    params.append("lastName", filters.lastName.trim());
   }
 
   const response = await fetch(
@@ -732,6 +741,9 @@ export async function getReservationsByProductId(
 
   return response.json();
 }
+
+
+
 
 
 
@@ -758,4 +770,57 @@ export async function revokeReservation(
   if (!response.ok) {
     throw new Error("Failed to revoke reservation");
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export type ReservationGuestCreateData = {
+  productOfferId: number;
+  startTime: string;
+  guestFirstName: string;
+  guestLastName: string;
+  email: string;
+};
+
+export type ReservationResultGuest = {
+  id: number;
+  createdAt: string;
+  paid: boolean;
+  startTime: string;
+  endTime: string;
+  productId: number;
+};
+
+export async function createGuestReservation(
+  data: ReservationGuestCreateData
+): Promise<ReservationResultGuest> {
+  const response = await fetch(`${RESERVATIONS_API_URL}/guest`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = new Error("Failed to create guest reservation") as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
 }

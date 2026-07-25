@@ -187,7 +187,9 @@
     align-items: center;
     justify-content: center;
     gap: 18px;
+    width: 100%;
     margin-top: 24px;
+    margin-bottom: 40px;
 }
 
 .manage-pagination-button {
@@ -199,16 +201,23 @@
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .manage-pagination-button:hover:not(:disabled) {
     background: #374151;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
 }
 
 .manage-pagination-button:disabled {
     background: #d1d5db;
     color: #6b7280;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .manage-pagination-info {

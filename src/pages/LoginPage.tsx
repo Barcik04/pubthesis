@@ -72,7 +72,7 @@ function LoginPage() {
         {message && <p className="success">{message}</p>}
 
         <p>
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+          Don&apos;t have an account? <Link to="/signup">Create one</Link>
         </p>
       </section>
     </main>

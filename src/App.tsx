@@ -11,7 +11,7 @@ import ManageReservations from "./pages/ManageReservations";
 
 import Navbar from "./components/Navbar";
 import ListingPage from "./pages/ListingPage";
-
+import GuestReservation from "./pages/GuestReservation";
 
 function App() {
 
@@ -31,6 +31,7 @@ function App() {
         <Route path="/reservation/:offerId" element={<Reservation />} />
         <Route path="/my-reservations" element={<MyReservations />} />
         <Route path="/manage-reservations/:productId"element={<ManageReservations />} />
+        <Route path="/guest-reservation/:offerId" element={<GuestReservation />}/>
       </Routes>
     </>
   );

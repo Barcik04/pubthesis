@@ -7,6 +7,8 @@ import "../styles/RegisterPage.css";
 function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -21,11 +23,15 @@ function RegisterPage() {
       await register({
         email: email,
         password: password,
+        firstName: firstName,
+        lastName: lastName,
       });
 
       setMessage("Account created. You can now sign in.");
       setEmail("");
       setPassword("");
+      setFirstName("");
+      setLastName("");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -42,6 +48,26 @@ function RegisterPage() {
         <p>Register a new account.</p>
 
         <form onSubmit={handleSubmit}>
+          <label>
+            First name
+            <input
+              type="text"
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Last name
+            <input
+              type="text"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+              required
+            />
+          </label>
+
           <label>
             Email
             <input
@@ -70,7 +96,7 @@ function RegisterPage() {
         {message && <p className="success">{message}</p>}
 
         <p>
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to="/signin">Sign in</Link>
         </p>
       </section>
     </main>

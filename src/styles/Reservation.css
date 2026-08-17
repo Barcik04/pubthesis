@@ -163,3 +163,151 @@
   background: #e5e7eb;
   color: #6b7280;
 }
+
+
+.slot-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-button-active {
+  background: #2563eb;
+  color: white;
+}
+
+.slot-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.invoice-toggle-button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  background: #eef2ff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.invoice-toggle-button:hover {
+  background: #dbeafe;
+}
+
+.invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.invoice-form input {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.confirm-button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-button:hover {
+  background: #0051ff;
+}
+
+
+
+
+.payment-popup-background {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.payment-popup {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 20px 55px rgba(15, 23, 42, 0.25);
+    text-align: center;
+}
+
+.payment-popup h2 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-size: 24px;
+}
+
+.payment-popup p {
+    margin: 0 0 24px;
+    color: #64748b;
+}
+
+.payment-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.cash-payment-button,
+.online-payment-button,
+.payment-cancel-button {
+    min-height: 46px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cash-payment-button {
+    background: #e8eefc;
+    color: #1e40af;
+}
+
+.online-payment-button {
+    background: #2864e8;
+    color: #ffffff;
+}
+
+.payment-cancel-button {
+    width: 100%;
+    margin-top: 12px;
+    background: transparent;
+    color: #64748b;
+}
+
+.cash-payment-button:hover {
+    background: #dbe6ff;
+}
+
+.online-payment-button:hover {
+    background: #1d4ed8;
+}
+
+.payment-cancel-button:hover {
+    background: #f1f5f9;
+}
+
+.payment-popup button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}

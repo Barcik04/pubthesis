@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/Reservation.css";
-import { getOfferById, getReservationsByOfferId, createReservation, type ProductOfferDetails, type ReservationDate} from "../api/productsApi";
+import {
+  getOfferById, 
+  getReservationsByOfferId,
+  createReservation,
+  type ProductOfferDetails,
+  type ReservationDate, 
+  createPaymentIntent,
+} from "../api/productsApi";
+
 
 function Reservation() {
   const { offerId } = useParams();
@@ -14,7 +22,9 @@ function Reservation() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState("");
   const [reservations, setReservations] = useState<ReservationDate[]>([]);
-
+  const [paymentSlot, setPaymentSlot] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  
   const year = date.getFullYear();
   const month = date.getMonth();
 
@@ -32,6 +42,19 @@ function Reservation() {
     ...Array(emptyDays).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
+
+
+  const [expandedSlot, setExpandedSlot] = useState<string | null>(null); 
+  const [wantInvoice, setWantInvoice] = useState(false); 
+  const [invoiceData, setInvoiceData] = useState({
+    buyerName: "",
+    buyerNip: "",
+    street: "",
+    postalCode: "",
+    city: "",
+    country: "",
+    email: "",
+  });
 
   useEffect(() => {
     async function loadData() {
@@ -53,6 +76,21 @@ function Reservation() {
 
   function nextMonth() {
     setDate(new Date(year, month + 1));
+  }
+
+
+
+  function toggleSlot(slotStart: string) {
+    if (expandedSlot === slotStart) {
+      setExpandedSlot(null); 
+    } else {
+      setExpandedSlot(slotStart);
+      setWantInvoice(false); 
+    }
+  }
+
+  function updateInvoiceField(field: keyof typeof invoiceData, value: string) {
+    setInvoiceData((prev) => ({ ...prev, [field]: value }));
   }
 
   function getDayOfWeek(day: number) {
@@ -105,37 +143,111 @@ function Reservation() {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }
 
+  
 
-  async function handleReservation(slotStart: string) {
+
+  async function handleCashPayment() {
+    if (!paymentSlot) return;
+
+    const slotStart = paymentSlot;
+    setPaymentSlot(null);
+
+    await saveReservation(slotStart);
+  }
+
+  async function handleOnlinePayment() {
+    if (!paymentSlot || !offerId || !selectedDay) return;
+
+    const startTime = `${getSelectedDate()}T${paymentSlot}:00`;
+
+    try {
+      setPaymentLoading(true);
+
+      const reservation = await createReservation(
+        {
+          productOfferId: Number(offerId),
+          startTime,
+        },
+        wantInvoice ? invoiceData : undefined
+      );
+
+      const paymentIntent = await createPaymentIntent(reservation.id);
+
+      navigate("/payment", {
+        state: {
+          clientSecret: paymentIntent.clientSecret,
+          reservationId: reservation.id,
+        },
+      });
+    } catch {
+      alert("Nie udało się rozpocząć płatności");
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
+
+  function handleReservationClick(slotStart: string) {
+    if (!offerId || !selectedDay) return;
+
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      const startTime = `${getSelectedDate()}T${slotStart}:00`;
+
+      localStorage.setItem(
+        "pendingInvoice",
+        wantInvoice ? JSON.stringify(invoiceData) : "null"
+      );
+
+      navigate(
+        `/guest-reservation/${offerId}?startTime=${encodeURIComponent(startTime)}`
+      );
+
+      return;
+    }
+
+    setPaymentSlot(slotStart);
+  }
+
+
+  async function saveReservation(slotStart: string) {
     if (!offerId || !selectedDay) return;
 
     const startTime = `${getSelectedDate()}T${slotStart}:00`;
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
+      localStorage.setItem(
+        "pendingInvoice",
+        wantInvoice ? JSON.stringify(invoiceData) : "null"
+      );
+
       navigate(
         `/guest-reservation/${offerId}?startTime=${encodeURIComponent(startTime)}`
       );
       return;
     }
 
-    const confirmed = window.confirm(
-      `Czy na pewno chcesz zarezerwować termin ${slotStart} dnia ${selectedDay}.${month + 1}.${year}?`
-    );
-
-    if (!confirmed) return;
-
     try {
-      await createReservation({
-        productOfferId: Number(offerId),
-        startTime,
-      });
-
-      const updatedReservations = await getReservationsByOfferId(
-        Number(offerId)
+      await createReservation(
+        { productOfferId: Number(offerId), startTime },
+        wantInvoice ? invoiceData : undefined
       );
 
+      const updatedReservations = await getReservationsByOfferId(Number(offerId));
       setReservations(updatedReservations);
+
+      setExpandedSlot(null);
+      setWantInvoice(false);
+      setInvoiceData({
+        buyerName: "",
+        buyerNip: "",
+        street: "",
+        postalCode: "",
+        city: "",
+        country: "",
+        email: "",
+      });
 
       alert("Rezerwacja została utworzona");
     } catch (error: any) {
@@ -150,6 +262,9 @@ function Reservation() {
       alert("Nie udało się utworzyć rezerwacji");
     }
   }
+
+
+
 
   function getSelectedDate() {
     if (!selectedDay) return "";
@@ -243,32 +358,146 @@ function Reservation() {
         </div>
       </div>
 
-      {selectedDay && (
-        <div className="popup-background" onClick={closePopup}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h2>
-              {selectedDay}.{month + 1}.{year}
-            </h2>
+        {selectedDay && (
+          <div className="popup-background" onClick={closePopup}>
+            <div className="popup" onClick={(e) => e.stopPropagation()}>
+              <h2>
+                {selectedDay}.{month + 1}.{year}
+              </h2>
 
-            <div className="slots">
-              {getSlots().length > 0 ? (
-                getSlots().map((slot, index) => (
-                <button
-                  key={index}
-                  disabled={slot.reserved}
-                  onClick={() => handleReservation(slot.start)}
-                  className={slot.reserved ? "slot-button reserved-slot" : "slot-button"}
-                >
-                  {slot.start} - {slot.end}
-                </button>
-                ))
-              ) : (
-                <p>Brak dostępnych godzin w tym dniu</p>
-              )}
+              <div className="slots">
+                {getSlots().length > 0 ? (
+                  getSlots().map((slot, index) => (
+                    <div key={index} className="slot-block">
+                      <button
+                        disabled={slot.reserved}
+                        onClick={() => toggleSlot(slot.start)}
+                        className={
+                          slot.reserved
+                            ? "slot-button reserved-slot"
+                            : expandedSlot === slot.start
+                            ? "slot-button slot-button-active"
+                            : "slot-button"
+                        }
+                      >
+                        {slot.start} - {slot.end}
+                      </button>
+
+                      {expandedSlot === slot.start && (
+                        <div className="slot-expanded">
+                          <button
+                            type="button"
+                            className="invoice-toggle-button"
+                            onClick={() => setWantInvoice(!wantInvoice)}
+                          >
+                            {wantInvoice ? "Cancel" : "Need an Invoice"}
+                          </button>
+
+                          {wantInvoice && (
+                            <div className="invoice-form">
+                              <input
+                                placeholder="Buyer's name"
+                                value={invoiceData.buyerName}
+                                onChange={(e) => updateInvoiceField("buyerName", e.target.value)}
+                              />
+                              <input
+                                placeholder="NIP"
+                                value={invoiceData.buyerNip}
+                                onChange={(e) => updateInvoiceField("buyerNip", e.target.value)}
+                              />
+                              <input
+                                placeholder="Street and street number"
+                                value={invoiceData.street}
+                                onChange={(e) => updateInvoiceField("street", e.target.value)}
+                              />
+                              <input
+                                placeholder="Postal code"
+                                value={invoiceData.postalCode}
+                                onChange={(e) => updateInvoiceField("postalCode", e.target.value)}
+                              />
+                              <input
+                                placeholder="City"
+                                value={invoiceData.city}
+                                onChange={(e) => updateInvoiceField("city", e.target.value)}
+                              />
+                              <input
+                                placeholder="Country"
+                                value={invoiceData.country}
+                                onChange={(e) => updateInvoiceField("country", e.target.value)}
+                              />
+                              <input
+                                placeholder="Email"
+                                type="email"
+                                value={invoiceData.email}
+                                onChange={(e) => updateInvoiceField("email", e.target.value)}
+                              />
+                            </div>
+                          )}
+
+                          <button
+                            type="button"
+                            className="confirm-button"
+                            onClick={() => handleReservationClick(slot.start)}>
+                            Confirm reservation
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p>No services available today</p>
+                )}
+              </div>
+
+              <button className="close-button" onClick={closePopup}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {paymentSlot && (
+        <div
+          className="payment-popup-background"
+          onClick={() => setPaymentSlot(null)}
+        >
+          <div
+            className="payment-popup"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>Choose payment method</h2>
+
+            <p>
+              Reservation for {paymentSlot}, {selectedDay}.{month + 1}.{year}
+            </p>
+
+            <div className="payment-options">
+              <button
+                type="button"
+                className="cash-payment-button"
+                onClick={handleCashPayment}
+                disabled={paymentLoading}
+              >
+                Pay with cash
+              </button>
+
+              <button
+                type="button"
+                className="online-payment-button"
+                onClick={handleOnlinePayment}
+                disabled={paymentLoading}
+              >
+                {paymentLoading ? "Loading..." : "Pay online"}
+              </button>
             </div>
 
-            <button className="close-button" onClick={closePopup}>
-              Zamknij
+            <button
+              type="button"
+              className="payment-cancel-button"
+              onClick={() => setPaymentSlot(null)}
+              disabled={paymentLoading}
+            >
+              Cancel
             </button>
           </div>
         </div>

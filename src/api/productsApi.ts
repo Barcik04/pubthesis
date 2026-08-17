@@ -322,49 +322,6 @@ export async function createProductOffer(
 
 
 
-export type ReservationCreateData = {
-  productOfferId: number;
-  startTime: string;
-};
-
-export type ReservationResult = {
-  id: number;
-  createdAt: string;
-  paid: boolean;
-  startTime: string;
-  endTime: string;
-};
-
-
-
-export async function createReservation(
-  data: ReservationCreateData
-): Promise<ReservationResult> {
-  const token = localStorage.getItem("accessToken");
-
-  if (!token) {
-    throw new Error("User is not authenticated");
-  }
-
-  const response = await fetch("http://localhost:8080/reservations", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const error = new Error("Failed to create reservation") as Error & { status?: number };
-    error.status = response.status;
-    throw error;
-  }
-
-  return response.json();
-}
-
-
 
 
 
@@ -803,21 +760,292 @@ export type ReservationResultGuest = {
   startTime: string;
   endTime: string;
   productId: number;
+  guestPaymentToken: string;
+};
+
+export type InvoiceRequestCreateData = {
+  buyerName: string;
+  buyerNip: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  email: string;
 };
 
 export async function createGuestReservation(
-  data: ReservationGuestCreateData
+  data: ReservationGuestCreateData,
+  invoice?: InvoiceRequestCreateData
 ): Promise<ReservationResultGuest> {
   const response = await fetch(`${RESERVATIONS_API_URL}/guest`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      reservationGuestCreateDto: data,
+      invoiceRequestCreateDto: invoice ?? null,
+    }),
   });
 
   if (!response.ok) {
     const error = new Error("Failed to create guest reservation") as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+export type ReservationCreateData = {
+  productOfferId: number;
+  startTime: string;
+};
+
+export type ReservationResult = {
+  id: number;
+  createdAt: string;
+  paid: boolean;
+  startTime: string;
+  endTime: string;
+};
+
+export async function createReservation(
+  data: ReservationCreateData,
+  invoice?: InvoiceRequestCreateData
+): Promise<ReservationResult> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch("http://localhost:8080/reservations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      reservationCreateDto: data,
+      invoiceRequestCreateDto: invoice ?? null,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = new Error("Failed to create reservation") as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+export type InvoiceFilter = {
+  email?: string;
+  issued?: boolean;
+};
+
+export type InvoiceResult = {
+  id: number;
+  buyerName: string;
+  buyerNip: string | null;
+  street: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  email: string;
+  status: string;
+  requestedAt: string;
+  issuedAt: string | null;
+};
+
+export async function getInvoices(
+  filter: InvoiceFilter = {},
+  page = 0,
+  size = 20
+): Promise<PageResponse<InvoiceResult>> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+
+  if (filter.email?.trim()) {
+    params.set("email", filter.email.trim());
+  }
+
+  if (filter.issued !== undefined) {
+    params.set("issued", filter.issued.toString());
+  }
+
+  const response = await fetch(
+    `http://localhost:8080/invoice?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const error = new Error("Failed to load invoices") as Error & {
+      status?: number;
+    };
+
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+
+
+export async function markInvoiceAsIssued(
+  invoiceId: number
+): Promise<InvoiceResult> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(
+    `http://localhost:8080/invoice/${invoiceId}`,
+    {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const error = new Error("Failed to mark invoice as issued") as Error & {
+      status?: number;
+    };
+
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+
+
+
+export type PaymentIntentResult = {
+  paymentIntentId: string;
+  clientSecret: string;
+};
+
+export async function createPaymentIntent(
+  reservationId: number
+): Promise<PaymentIntentResult> {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(
+    "http://localhost:8080/payments/payment-intent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        reservationId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = new Error(
+      "Failed to create payment intent"
+    ) as Error & {
+      status?: number;
+    };
+
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+export async function createGuestPaymentIntent(
+  reservationId: number,
+  guestPaymentToken: string
+): Promise<PaymentIntentResult> {
+  const response = await fetch(
+    "http://localhost:8080/payments/guest/payment-intent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        reservationId,
+        guestPaymentToken,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = new Error(
+      "Failed to create guest payment intent"
+    ) as Error & {
+      status?: number;
+    };
+
     error.status = response.status;
     throw error;
   }

@@ -291,6 +291,9 @@ function User() {
                     <Link to="/my-reservations" className="create-listing-button-user">
                         My Reservations
                     </Link>
+                    <Link to="/invoice-manager" className="create-listing-button-user">
+                        Invoices Manager
+                    </Link>
                 </aside>
                 
             </div>

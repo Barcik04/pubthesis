@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
-import { createGuestReservation } from "../api/productsApi";
+import {
+  createGuestReservation,
+  createGuestPaymentIntent,
+} from "../api/productsApi";
 import "../styles/GuestReservation.css";
 
 function GuestReservation() {
@@ -28,16 +31,34 @@ function GuestReservation() {
       setLoading(true);
       setError("");
 
-      const result = await createGuestReservation({
-        productOfferId: Number(offerId),
-        startTime,
-        guestFirstName: firstName,
-        guestLastName: lastName,
-        email,
-      });
+      const pendingInvoiceRaw = localStorage.getItem("pendingInvoice");
+      const invoice = pendingInvoiceRaw ? JSON.parse(pendingInvoiceRaw) : undefined;
 
-      alert("Rezerwacja została utworzona");
-      navigate(`/listing-page/${result.productId}`);
+      const result = await createGuestReservation(
+        {
+          productOfferId: Number(offerId),
+          startTime,
+          guestFirstName: firstName,
+          guestLastName: lastName,
+          email,
+        },
+        invoice
+      );
+
+      const paymentIntent = await createGuestPaymentIntent(
+        result.id,
+        result.guestPaymentToken
+      );
+
+      localStorage.removeItem("pendingInvoice");
+
+      navigate("/payment", {
+        state: {
+          clientSecret: paymentIntent.clientSecret,
+          reservationId: result.id,
+        },
+      });
+      
     } catch (err) {
       setError("Nie udało się utworzyć rezerwacji");
     } finally {

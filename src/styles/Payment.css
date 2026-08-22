@@ -36,6 +36,17 @@
     gap: 16px;
 }
 
+.payment-cancel-button {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid rgba(0, 0, 0, 0.164);
+}
+
+.payment-cancel-button:hover {
+    background-color: #a30808bd;
+    color: white;
+}
+
 .card-payment-form .online-payment-button {
     width: 100%;
     min-height: 48px;
@@ -45,4 +56,27 @@
     margin: 0;
     color: #dc2626;
     font-size: 14px;
+}
+
+
+.cash-login-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.cash-login-description {
+  margin: 8px 0 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.cash-login-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cash-login-actions .guest-reservation-secondary-button {
+  flex: 1;
 }

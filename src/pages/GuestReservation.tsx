@@ -6,6 +6,7 @@ import {
 } from "../api/productsApi";
 import "../styles/GuestReservation.css";
 
+
 function GuestReservation() {
   const { offerId } = useParams();
   const [searchParams] = useSearchParams();
@@ -19,7 +20,7 @@ function GuestReservation() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!offerId || !startTime) {
@@ -31,8 +32,13 @@ function GuestReservation() {
       setLoading(true);
       setError("");
 
-      const pendingInvoiceRaw = localStorage.getItem("pendingInvoice");
-      const invoice = pendingInvoiceRaw ? JSON.parse(pendingInvoiceRaw) : undefined;
+      const pendingInvoiceRaw =
+        localStorage.getItem("pendingInvoice");
+
+      const invoice =
+        pendingInvoiceRaw && pendingInvoiceRaw !== "null"
+          ? JSON.parse(pendingInvoiceRaw)
+          : undefined;
 
       const result = await createGuestReservation(
         {
@@ -41,6 +47,7 @@ function GuestReservation() {
           guestFirstName: firstName,
           guestLastName: lastName,
           email,
+          paymentMethod: "CARD",
         },
         invoice
       );
@@ -58,8 +65,7 @@ function GuestReservation() {
           reservationId: result.id,
         },
       });
-      
-    } catch (err) {
+    } catch {
       setError("Nie udało się utworzyć rezerwacji");
     } finally {
       setLoading(false);

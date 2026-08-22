@@ -117,14 +117,46 @@
     white-space: nowrap;
 }
 
-.payment-status-paid {
-    background: #dcfce7;
+.payment-status-confirmed {
     color: #166534;
+    background-color: #dcfce7;
 }
 
-.payment-status-unpaid {
-    background: #fee2e2;
+.payment-status-pending-payment {
+    color: #92400e;
+    background-color: #fef3c7;
+}
+
+.payment-status-cancelled {
     color: #991b1b;
+    background-color: #fee2e2;
+}
+
+.manage-reservation-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.payment-method {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.payment-method-cash {
+  color: #166534;
+  background-color: #dcfce7;
+}
+
+.payment-method-card {
+  color: #1e40af;
+  background-color: #dbeafe;
 }
 
 .manage-reservation-details {

@@ -4,6 +4,8 @@ import {
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
+import { Link } from "react-router-dom";
+import "../styles/Payment.css"
 
 type CardPaymentFormProps = {
   onSuccess: () => void;
@@ -19,6 +21,9 @@ function CardPaymentForm({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const isAuthenticated = Boolean(
+    localStorage.getItem("accessToken")
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,6 +79,33 @@ function CardPaymentForm({
       >
         Cancel
       </button>
+        {!isAuthenticated && (
+          <div className="cash-login-section">
+            <p className="guest-reservation-divider">
+              Want to pay with cash?
+            </p>
+
+            <p className="cash-login-description">
+              Sign in or create an account to choose cash payment.
+            </p>
+
+            <div className="cash-login-actions">
+              <Link
+                to="/signin"
+                className="guest-reservation-secondary-button"
+              >
+                Sign in
+              </Link>
+
+              <Link
+                to="/signup"
+                className="guest-reservation-secondary-button"
+              >
+                Register
+              </Link>
+            </div>
+          </div>
+        )}
     </form>
   );
 }

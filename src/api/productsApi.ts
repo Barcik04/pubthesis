@@ -286,11 +286,12 @@ export async function getProductById(productId: number): Promise<ProductDetails>
 
 
 
-type ProductOfferCreateData = {
+export type ProductOfferCreateData = {
   name: string;
   description: string;
   price: number;
   durationMinutes: number;
+  cashPaymentAvailability: boolean;
 };
 
 export async function createProductOffer(
@@ -303,14 +304,17 @@ export async function createProductOffer(
     throw new Error("User is not authenticated");
   }
 
-  const response = await fetch(`http://localhost:8080/offers/${productId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await fetch(
+    `http://localhost:8080/offers/${productId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to create product offer");
@@ -432,6 +436,7 @@ export type ProductOfferDetails = {
   price: number;
   duration: number;
   availabilities: ProductOfferAvailabilityGet[];
+  cashPaymentAvailability: boolean;
 };
 
 export async function getOfferById(
@@ -458,6 +463,7 @@ export type ProductOfferAvailabilityUpdateData = {
   dayOfWeek: string;
   startTime: string;
   endTime: string;
+  offerId: number;
 };
 
 export type ProductOfferUpdateData = {
@@ -465,6 +471,7 @@ export type ProductOfferUpdateData = {
   description: string;
   price: number;
   durationMinutes: number;
+  cashPaymentAvailability: boolean;
   availabilities: ProductOfferAvailabilityUpdateData[];
 };
 
@@ -473,7 +480,8 @@ export type ProductOfferUpdateResult = {
   name: string;
   description: string;
   price: number;
-  durationMinutes: number;
+  duration: number;
+  cashPaymentAvailability: boolean;
   availabilities: ProductOfferAvailability[];
 };
 
@@ -487,14 +495,17 @@ export async function updateProductOffer(
     throw new Error("User is not authenticated");
   }
 
-  const response = await fetch(`${OFFERS_API_URL}/${offerId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await fetch(
+    `${OFFERS_API_URL}/${offerId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to update product offer");
@@ -502,7 +513,6 @@ export async function updateProductOffer(
 
   return response.json();
 }
-
 
 
 
@@ -537,13 +547,16 @@ export async function deleteProductOffer(offerId: number): Promise<void> {
 
 
 
-
-
+export type ReservationStatus =
+  | "PENDING_PAYMENT"
+  | "CONFIRMED"
+  | "CANCELLED";
 
 export type MyReservation = {
   id: number;
   createdAt: string;
-  paid: boolean;
+  status: ReservationStatus;
+  paymentMethod: PaymentMethod;
   startTime: string;
   endTime: string;
   productId: number;
@@ -609,10 +622,13 @@ export async function cancelReservation(
 
 
 
+export type PaymentMethod = "CASH" | "CARD";
+
 export type ReservationWithOffer = {
   id: number;
   createdAt: string;
-  paid: boolean;
+  status: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED";
+  paymentMethod: PaymentMethod;
   startTime: string;
   endTime: string;
   username: string;
@@ -751,12 +767,12 @@ export type ReservationGuestCreateData = {
   guestFirstName: string;
   guestLastName: string;
   email: string;
+  paymentMethod: PaymentMethod;
 };
 
 export type ReservationResultGuest = {
   id: number;
   createdAt: string;
-  paid: boolean;
   startTime: string;
   endTime: string;
   productId: number;
@@ -789,7 +805,12 @@ export async function createGuestReservation(
   });
 
   if (!response.ok) {
-    const error = new Error("Failed to create guest reservation") as Error & { status?: number };
+    const error = new Error(
+      "Failed to create guest reservation"
+    ) as Error & {
+      status?: number;
+    };
+
     error.status = response.status;
     throw error;
   }
@@ -806,14 +827,18 @@ export async function createGuestReservation(
 export type ReservationCreateData = {
   productOfferId: number;
   startTime: string;
+  paymentMethod: PaymentMethod;
 };
 
 export type ReservationResult = {
   id: number;
   createdAt: string;
-  paid: boolean;
   startTime: string;
   endTime: string;
+  productId: number;
+  status: ReservationStatus;
+  paymentMethod: PaymentMethod;
+  cashPaymentAvailability: boolean;
 };
 
 export async function createReservation(
@@ -826,7 +851,7 @@ export async function createReservation(
     throw new Error("User is not authenticated");
   }
 
-  const response = await fetch("http://localhost:8080/reservations", {
+  const response = await fetch(RESERVATIONS_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -839,14 +864,18 @@ export async function createReservation(
   });
 
   if (!response.ok) {
-    const error = new Error("Failed to create reservation") as Error & { status?: number };
+    const error = new Error(
+      "Failed to create reservation"
+    ) as Error & {
+      status?: number;
+    };
+
     error.status = response.status;
     throw error;
   }
 
   return response.json();
 }
-
 
 
 

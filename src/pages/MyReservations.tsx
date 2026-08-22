@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { getMyReservations, cancelReservation, type MyReservation } from "../api/productsApi";
+import { Link, useNavigate } from "react-router-dom";
+
+import {
+  cancelReservation,
+  createPaymentIntent,
+  getMyReservations,
+  type MyReservation,
+} from "../api/productsApi";
 
 import "../styles/MyReservations.css";
 
 type ReservationFilter = "ALL" | "UPCOMING" | "COMPLETED" | "PAID";
 
-
-
 function MyReservations() {
+  const navigate = useNavigate();
+
   const [reservations, setReservations] = useState<MyReservation[]>([]);
   const [selectedFilter, setSelectedFilter] =
     useState<ReservationFilter>("ALL");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [paymentLoadingId, setPaymentLoadingId] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     async function loadReservations() {
@@ -49,7 +58,7 @@ function MyReservations() {
     }
 
     if (selectedFilter === "PAID") {
-      return reservation.paid;
+      return reservation.status === "CONFIRMED";
     }
 
     return true;
@@ -63,6 +72,26 @@ function MyReservations() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  }
+
+  async function handlePayNow(reservationId: number) {
+    try {
+      setError("");
+      setPaymentLoadingId(reservationId);
+
+      const paymentIntent = await createPaymentIntent(reservationId);
+
+      navigate("/payment", {
+        state: {
+          clientSecret: paymentIntent.clientSecret,
+          reservationId,
+        },
+      });
+    } catch {
+      setError("Failed to start payment");
+    } finally {
+      setPaymentLoadingId(null);
+    }
   }
 
   async function handleCancelReservation(reservationId: number) {
@@ -134,7 +163,7 @@ function MyReservations() {
           <p className="loading">Loading reservations...</p>
         )}
 
-        {!loading && !error && filteredReservations.length === 0 && (
+        {!loading && filteredReservations.length === 0 && (
           <p className="empty-reservations">
             No reservations found.
           </p>
@@ -161,15 +190,38 @@ function MyReservations() {
                   </p>
 
                   <p>
-                    <span>Payment:</span>
+                    <span>Status:</span>
+
                     <strong
                       className={
-                        reservation.paid
+                        reservation.status === "CONFIRMED"
                           ? "payment-paid"
-                          : "payment-unpaid"
+                          : reservation.status === "PENDING_PAYMENT"
+                            ? "payment-pending"
+                            : "payment-cancelled"
                       }
                     >
-                      {reservation.paid ? "Paid" : "Unpaid"}
+                      {reservation.status === "CONFIRMED"
+                        ? "Confirmed"
+                        : reservation.status === "PENDING_PAYMENT"
+                          ? "Pending payment"
+                          : "Cancelled"}
+                    </strong>
+                  </p>
+
+                  <p>
+                    <span>Payment method:</span>
+
+                    <strong
+                      className={
+                        reservation.paymentMethod === "CASH"
+                          ? "my-payment-method-cash"
+                          : "my-payment-method-card"
+                      }
+                    >
+                      {reservation.paymentMethod === "CASH"
+                        ? "Cash"
+                        : "Card online"}
                     </strong>
                   </p>
                 </div>
@@ -182,22 +234,39 @@ function MyReservations() {
                     View product
                   </Link>
 
-                  {new Date(reservation.startTime) > now && (
-                    <button
-                      type="button"
-                      className="reservation-cancel-button"
-                      onClick={() => handleCancelReservation(reservation.id)}
-                    > 
-                      <span>Cancel</span>
-                    </button>
-                  )}
+                  {reservation.status === "PENDING_PAYMENT" &&
+                    reservation.paymentMethod === "CARD" && (
+                      <button
+                        type="button"
+                        className="reservation-pay-button"
+                        onClick={() => handlePayNow(reservation.id)}
+                        disabled={paymentLoadingId === reservation.id}
+                      >
+                        {paymentLoadingId === reservation.id
+                          ? "Loading..."
+                          : "Pay now"}
+                      </button>
+                    )}
+
+                  {new Date(reservation.startTime) > now &&
+                    reservation.status !== "CANCELLED" && (
+                      <button
+                        type="button"
+                        className="reservation-cancel-button"
+                        onClick={() =>
+                          handleCancelReservation(reservation.id)
+                        }
+                      >
+                        Cancel
+                      </button>
+                    )}
                 </div>
               </li>
             ))}
           </ul>
         )}
-
       </section>
+
       <Link to="/user" className="back-to-profile-button">
         Back to profile
       </Link>

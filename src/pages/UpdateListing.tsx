@@ -20,6 +20,13 @@ type OfferAvailability = {
   endTime: string;
 };
 
+
+type AvailabilityInput = {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+};
+
 type Offer = {
   id: number;
   name: string;
@@ -28,13 +35,8 @@ type Offer = {
   createdAt?: string;
   duration?: number;
   durationMinutes?: number;
+  cashPaymentAvailability: boolean;
   availabilities: OfferAvailability[];
-};
-
-type AvailabilityInput = {
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
 };
 
 type NewOffer = {
@@ -42,6 +44,7 @@ type NewOffer = {
   description: string;
   price: string;
   durationMinutes: string;
+  cashPaymentAvailability: boolean;
   availabilities: AvailabilityInput[];
 };
 
@@ -104,6 +107,11 @@ function UpdateListing() {
     AvailabilityInput[]
   >([]);
 
+  const [
+    offerCashPaymentAvailability,
+    setOfferCashPaymentAvailability,
+  ] = useState(false);
+
   function handleOpenOfferPopup() {
     setEditingOfferId(null);
     setOfferName("");
@@ -113,6 +121,7 @@ function UpdateListing() {
     setOfferAvailabilities([]);
     setIsOfferPopupOpen(true);
     setError("");
+    setOfferCashPaymentAvailability(false);
   }
 
   function handleOpenEditOfferPopup(offer: Offer) {
@@ -132,11 +141,13 @@ function UpdateListing() {
     );
     setIsOfferPopupOpen(true);
     setError("");
+    setOfferCashPaymentAvailability(offer.cashPaymentAvailability ?? false);
   }
 
   function handleCloseOfferPopup() {
     setIsOfferPopupOpen(false);
     setEditingOfferId(null);
+    setOfferCashPaymentAvailability(false);
   }
 
   async function handleDeleteOffer(offerId: number) {
@@ -222,13 +233,23 @@ async function handleAddOfferToLocalList() {
 
     if (editingOfferId !== null) {
       try {
-        const updatedOffer = await updateProductOffer(editingOfferId, {
-          name: offerName,
-          description: offerDescription,
-          price: Number(offerPrice),
-          durationMinutes: Number(offerDurationMinutes),
-          availabilities: offerAvailabilities,
-        });
+        const updatedOffer = await updateProductOffer(
+          editingOfferId,
+          {
+            name: offerName,
+            description: offerDescription,
+            price: Number(offerPrice),
+            durationMinutes: Number(offerDurationMinutes),
+            cashPaymentAvailability:
+              offerCashPaymentAvailability,
+            availabilities: offerAvailabilities.map(
+              (availability) => ({
+                ...availability,
+                offerId: editingOfferId,
+              })
+            ),
+          }
+        );
 
         setOffers(
           offers.map((offer) =>
@@ -247,6 +268,8 @@ async function handleAddOfferToLocalList() {
           description: offerDescription,
           price: offerPrice,
           durationMinutes: offerDurationMinutes,
+          cashPaymentAvailability:
+            offerCashPaymentAvailability,
           availabilities: offerAvailabilities,
         },
       ]);
@@ -260,6 +283,7 @@ async function handleAddOfferToLocalList() {
     setIsOfferPopupOpen(false);
     setEditingOfferId(null);
     setError("");
+    setOfferCashPaymentAvailability(false);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -288,12 +312,17 @@ async function handleAddOfferToLocalList() {
       await updateProduct(parsedProductId, data, image);
 
       for (const offer of newOffers) {
-        const createdOffer = await createProductOffer(parsedProductId, {
-          name: offer.name,
-          description: offer.description,
-          price: Number(offer.price),
-          durationMinutes: Number(offer.durationMinutes),
-        });
+        const createdOffer = await createProductOffer(
+          parsedProductId,
+          {
+            name: offer.name,
+            description: offer.description,
+            price: Number(offer.price),
+            durationMinutes: Number(offer.durationMinutes),
+            cashPaymentAvailability:
+              offer.cashPaymentAvailability,
+          }
+        );
 
         for (const availability of offer.availabilities) {
           await createProductOfferAvailability({
@@ -408,6 +437,15 @@ async function handleAddOfferToLocalList() {
                         <p>{offer.description}</p>
                         <p>{offer.price} PLN</p>
                         <p>{offer.duration ?? offer.durationMinutes} minutes</p>
+                        <p className="cash-availability-show">
+                          <span>Cash payment:</span>
+
+                          <strong>
+                            {offer.cashPaymentAvailability
+                              ? "Available"
+                              : "Unavailable"}
+                          </strong>
+                        </p>
                       </div>
 
                       <div className="buttons-wrap-create-listing">
@@ -471,6 +509,15 @@ async function handleAddOfferToLocalList() {
                       <p>{offer.description}</p>
                       <p>{offer.price} PLN</p>
                       <p>{offer.durationMinutes} minutes</p>
+                      <p className="cash-availability-show">
+                        <span>Cash payment:</span>
+
+                        <strong>
+                          {offer.cashPaymentAvailability
+                            ? "Available"
+                            : "Unavailable"}
+                        </strong>
+                      </p>
                     </div>
 
                     <button
@@ -589,6 +636,19 @@ async function handleAddOfferToLocalList() {
                   setOfferDurationMinutes(event.target.value)
                 }
               />
+            </label>
+            <label className="cash-payment-checkbox">
+              <input
+                type="checkbox"
+                checked={offerCashPaymentAvailability}
+                onChange={(event) =>
+                  setOfferCashPaymentAvailability(
+                    event.target.checked
+                  )
+                }
+              />
+
+              <span>Allow cash payment</span>
             </label>
 
             <div>

@@ -21,6 +21,7 @@ type NewOffer = {
   description: string;
   price: string;
   durationMinutes: string;
+  cashPaymentAvailability: boolean;
   availabilities: AvailabilityInput[];
 };
 
@@ -65,6 +66,7 @@ function CreateListing() {
   const [offerAvailabilities, setOfferAvailabilities] = useState<
     AvailabilityInput[]
   >([]);
+  const [offerCashPaymentAvailability, setOfferCashPaymentAvailability,] = useState(false);
 
   function handleOpenOfferPopup() {
     setEditingOfferIndex(null);
@@ -107,6 +109,7 @@ function CreateListing() {
     setOfferPrice("");
     setOfferDurationMinutes("");
     setOfferAvailabilities([]);
+    setOfferCashPaymentAvailability(false);
   }
 
   function handleToggleAvailabilityDay(dayOfWeek: string) {
@@ -178,11 +181,12 @@ function CreateListing() {
       }
     }
 
-    const offerData = {
+    const offerData: NewOffer = {
       name: offerName,
       description: offerDescription,
       price: offerPrice,
       durationMinutes: offerDurationMinutes,
+      cashPaymentAvailability: offerCashPaymentAvailability,
       availabilities: offerAvailabilities,
     };
 
@@ -206,6 +210,7 @@ function CreateListing() {
     setOfferAvailabilities([]);
     setIsOfferPopupOpen(false);
     setError("");
+    setOfferCashPaymentAvailability(false);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -227,12 +232,17 @@ function CreateListing() {
       const createdProduct = await createProduct(data, image);
 
       for (const offer of newOffers) {
-        const createdOffer = await createProductOffer(createdProduct.id, {
-          name: offer.name,
-          description: offer.description,
-          price: Number(offer.price),
-          durationMinutes: Number(offer.durationMinutes),
-        });
+        const createdOffer = await createProductOffer(
+          createdProduct.id,
+          {
+            name: offer.name,
+            description: offer.description,
+            price: Number(offer.price),
+            durationMinutes: Number(offer.durationMinutes),
+            cashPaymentAvailability:
+              offer.cashPaymentAvailability,
+          }
+        );
 
         for (const availability of offer.availabilities) {
           await createProductOfferAvailability({
@@ -340,6 +350,15 @@ function CreateListing() {
                         <p>{offer.description}</p>
                         <p>{offer.price} PLN</p>
                         <p>{offer.durationMinutes} minutes</p>
+                        <p className="cash-availability-show">
+                          <span>Cash payment:</span>
+
+                          <strong>
+                            {offer.cashPaymentAvailability
+                              ? "Available"
+                              : "Unavailable"}
+                          </strong>
+                        </p>
                       </div>
 
                       <div className="buttons-wrap-create-listing">
@@ -460,6 +479,19 @@ function CreateListing() {
                   setOfferDurationMinutes(event.target.value)
                 }
               />
+            </label>
+            <label className="cash-payment-checkbox">
+              <input
+                type="checkbox"
+                checked={offerCashPaymentAvailability}
+                onChange={(event) =>
+                  setOfferCashPaymentAvailability(
+                    event.target.checked
+                  )
+                }
+              />
+
+              <span>Allow cash payment</span>
             </label>
 
             <div>

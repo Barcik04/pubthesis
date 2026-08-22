@@ -218,15 +218,23 @@ function ManageReservations() {
                     <h3>{reservation.offerName}</h3>
                   </div>
 
-                  <span
-                    className={
-                      reservation.paid
-                        ? "payment-status payment-status-paid"
-                        : "payment-status payment-status-unpaid"
-                    }
-                  >
-                    {reservation.paid ? "Paid" : "Unpaid"}
-                  </span>
+                  <div className="manage-reservation-badges">
+                    <span
+                      className={`payment-method payment-method-${reservation.paymentMethod.toLowerCase()}`}
+                    >
+                      {reservation.paymentMethod === "CASH" ? "Cash" : "Card"}
+                    </span>
+
+                    <span
+                      className={`payment-status payment-status-${reservation.status
+                        .toLowerCase()
+                        .replace("_", "-")}`}
+                    >
+                      {reservation.status === "CONFIRMED" && "Confirmed"}
+                      {reservation.status === "PENDING_PAYMENT" && "Pending payment"}
+                      {reservation.status === "CANCELLED" && "Cancelled"}
+                    </span>
+                  </div>
                 </div>
 
                 <p className="manage-reservation-description">

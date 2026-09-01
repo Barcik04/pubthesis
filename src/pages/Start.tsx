@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
-import { getProducts, getProductTypes } from "../api/productsApi";
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
+import { getProducts, getProductTypes, searchCities, type CitySearchResult, } from "../api/productsApi";
 import { Link } from "react-router-dom";
+import ProductsMap from "./ProductsMap";
 
 import "../styles/Start.css";
 
@@ -10,6 +15,8 @@ type Product = {
   description: string;
   price: number;
   imageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 type ProductType = {
@@ -28,9 +35,17 @@ function Start() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [availableTypes, setAvailableTypes] = useState<ProductType[]>([]);
   const [isTypesOpen, setIsTypesOpen] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
+
+  const [cityInput, setCityInput] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [cityResults, setCityResults] = useState<CitySearchResult[]>([]);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [cityError, setCityError] = useState("");
+  const [isCitySelected, setIsCitySelected] = useState(false);
 
   const pageSize = 20;
 
@@ -47,6 +62,55 @@ function Start() {
     loadProductTypes();
   }, []);
 
+
+  useEffect(() => {
+    const cityName = cityInput.trim();
+
+    setCityError("");
+
+    if (isCitySelected || cityName.length < 2) {
+      if (cityName.length < 2) {
+        setCityResults([]);
+      }
+
+      return;
+    }
+
+    setCityResults([]);
+
+    let cancelled = false;
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        setCityLoading(true);
+
+        const cities = await searchCities(cityName);
+
+        if (!cancelled) {
+          setCityResults(cities);
+        }
+      } catch {
+        if (!cancelled) {
+          setCityError("Failed to search cities");
+          setCityResults([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setCityLoading(false);
+        }
+      }
+    }, 4000);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [cityInput, isCitySelected]);
+
+
+
+
+
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -59,7 +123,8 @@ function Start() {
           searchName,
           selectedTypes,
           minPrice,
-          maxPrice
+          maxPrice,
+          cityFilter
         );
 
         setProducts(data.content);
@@ -72,7 +137,7 @@ function Start() {
     }
 
     loadProducts();
-    }, [page, searchName, selectedTypes, minPrice, maxPrice]);
+    }, [ page, searchName, selectedTypes, minPrice, maxPrice, cityFilter, ]);
 
 
   function goToPreviousPage() {
@@ -95,6 +160,51 @@ function Start() {
     });
   }
 
+  function resetFilters() {
+    setPage(0);
+
+    setSearchName("");
+    setSelectedTypes([]);
+    setMinPrice(0);
+    setMaxPrice(10000);
+
+    setCityInput("");
+    setCityFilter("");
+    setCityResults([]);
+    setCityError("");
+    setCityLoading(false);
+    setIsCitySelected(false);
+
+    setIsTypesOpen(false);
+  }
+
+
+  function handleCitySearch(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    setPage(0);
+    setCityFilter(cityInput.trim());
+    setCityResults([]);
+    setIsCitySelected(true);
+  }
+
+
+function handleCitySelect(city: CitySearchResult) {
+  setPage(0);
+  setCityInput(city.name);
+  setCityFilter(city.name);
+  setCityResults([]);
+  setCityError("");
+  setIsCitySelected(true);
+}
+
+
+
+
+
+
 return (
   <main className="page">
     <h1>Listings</h1>
@@ -112,6 +222,71 @@ return (
             }}
             className="search-input"
           />
+        </div>
+        <div className="city-search-wrapper">
+          <form
+            className="city-search-form"
+            onSubmit={handleCitySearch}
+          >
+            <input
+              type="text"
+              placeholder="Search by city..."
+              value={cityInput}
+              onChange={(event) => {
+                setCityInput(event.target.value);
+                setIsCitySelected(false);
+              }}
+              className="city-search-input"
+            />
+          </form>
+
+          {cityLoading && (
+            <div className="city-search-message">
+              Searching cities...
+            </div>
+          )}
+
+          {cityError && (
+            <div className="city-search-message city-search-error">
+              {cityError}
+            </div>
+          )}
+
+          {cityResults.length > 0 && (
+            <div className="city-results-wrapper">
+              <table className="city-results-table">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>Location</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {cityResults.map((city) => (
+                    <tr
+                      key={`${city.latitude}-${city.longitude}`}
+                      tabIndex={0}
+                      onClick={() => handleCitySelect(city)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          handleCitySelect(city);
+                        }
+                      }}
+                    >
+                      <td className="city-result-name">
+                        {city.name}
+                      </td>
+
+                      <td>
+                        {city.displayName}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div className="types-dropdown">
@@ -189,6 +364,32 @@ return (
             </div>
             
           </div>
+        </div>
+        <button
+          type="button"
+          className="reset-filters-button"
+          onClick={resetFilters}
+        >
+          Reset filters
+        </button>
+      </div>
+      <div className="map-section">
+        <button
+          type="button"
+          className="show-map-button"
+          onClick={() => setShowMap((current) => !current)}
+        >
+          {showMap ? "Hide map" : "Show map"}
+        </button>
+
+        <div className="map-window">
+          {showMap ? (
+            <ProductsMap products={products} />
+          ) : (
+            <p className="map-placeholder">
+              Click "Show map" to display locations of products.
+            </p>
+          )}
         </div>
       </div>
 

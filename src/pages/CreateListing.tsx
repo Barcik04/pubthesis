@@ -52,6 +52,11 @@ function CreateListing() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [types, setTypes] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("");
   const [image, setImage] = useState<File | null>(null);
 
   const [newOffers, setNewOffers] = useState<NewOffer[]>([]);
@@ -227,6 +232,12 @@ function CreateListing() {
           .split(",")
           .map((type) => type.trim())
           .filter((type) => type.length > 0),
+        street: street,
+        houseNumber: houseNumber,
+        city: city,
+        postalCode: postalCode,
+        country: country,
+        offers: [],
       };
 
       const createdProduct = await createProduct(data, image);
@@ -258,6 +269,11 @@ function CreateListing() {
       setDescription("");
       setPrice("");
       setTypes("");
+      setStreet("");
+      setHouseNumber("");
+      setCity("");
+      setPostalCode("");
+      setCountry("");
       setImage(null);
       setNewOffers([]);
     } catch (err) {
@@ -292,6 +308,65 @@ function CreateListing() {
               placeholder="Describe your product or service..."
               value={description}
               onChange={(event) => setDescription(event.target.value)}
+              required
+            />
+          </label>
+
+          <div className="form-row">
+            <label>
+              Street
+              <input
+                type="text"
+                placeholder="e.g. Kościuszki"
+                value={street}
+                onChange={(event) => setStreet(event.target.value)}
+                required
+              />
+            </label>
+
+            <label>
+              House number
+              <input
+                type="text"
+                placeholder="e.g. 15A"
+                value={houseNumber}
+                onChange={(event) => setHouseNumber(event.target.value)}
+                required
+              />
+            </label>
+          </div>
+
+          <div className="form-row">
+            <label>
+              City
+              <input
+                type="text"
+                placeholder="e.g. Olsztyn"
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                required
+              />
+            </label>
+
+            <label>
+              Postal code
+              <input
+                type="text"
+                placeholder="e.g. 10-001"
+                value={postalCode}
+                onChange={(event) => setPostalCode(event.target.value)}
+                required
+              />
+            </label>
+          </div>
+
+          <label>
+            Country
+            <input
+              type="text"
+              placeholder="e.g. Poland"
+              value={country}
+              onChange={(event) => setCountry(event.target.value)}
               required
             />
           </label>

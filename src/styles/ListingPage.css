@@ -167,3 +167,22 @@
   background: #e5e7eb;
   color: #94a3b8;
 }
+
+
+.maps-link {
+  font-size: large;
+  padding: 20px 0 0 0;
+}
+
+
+.link-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+.link-wrapper img {
+  width: 20px;
+  height: 20px;
+  /* filter: invert(1); */
+  margin: 20px 0 0 10px;
+}

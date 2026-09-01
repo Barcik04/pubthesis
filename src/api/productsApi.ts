@@ -1,8 +1,20 @@
-type Product = {
+export type Product = {
   id: number;
   name: string;
   description: string;
   price: number;
+  types: string[];
+
+  street: string;
+  houseNumber: string;
+  city: string;
+  postalCode: string;
+  country: string;
+
+  imageUrl?: string | null;
+  offers: ProductOffer[];
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 type ProductsPage = {
@@ -21,7 +33,8 @@ export async function getProducts(
   name = "",
   types: string[] = [],
   minPrice?: number,
-  maxPrice?: number
+  maxPrice?: number,
+  city?: string
 ): Promise<ProductsPage> {
   const params = new URLSearchParams();
 
@@ -42,6 +55,10 @@ export async function getProducts(
 
   if (maxPrice !== undefined && maxPrice !== null) {
     params.append("maxPrice", String(maxPrice));
+  }
+
+  if (city?.trim()) {
+    params.append("city", city.trim());
   }
 
   const response = await fetch(`${API_URL}?${params.toString()}`);
@@ -129,11 +146,21 @@ export async function getProductTypes(): Promise<ProductType[]> {
 
 
 
-type ProductCreateData = {
+
+
+export type ProductCreateData = {
   name: string;
   description: string;
   price: number;
   types: string[];
+
+  street: string;
+  houseNumber: string;
+  city: string;
+  country: string;
+  postalCode: string;
+
+  offers: ProductOfferCreateData[];
 };
 
 export async function createProduct(
@@ -178,14 +205,24 @@ export async function createProduct(
 
 
 
+
+
+
+type ProductUpdateData = {
+  name: string;
+  description: string;
+  price: number;
+  types: string[];
+  street: string;
+  houseNumber: string;
+  city: string;
+  country: string;
+  postalCode: string;
+};
+
 export async function updateProduct(
   productId: number,
-  product: {
-    name: string;
-    description: string;
-    price: number;
-    types: string[];
-  },
+  product: ProductUpdateData,
   image?: File | null
 ) {
   const token = localStorage.getItem("accessToken");
@@ -221,6 +258,13 @@ export async function updateProduct(
 
   return response.json();
 }
+
+
+
+
+
+
+
 
 
 
@@ -270,6 +314,13 @@ export type ProductDetails = {
   isActive: boolean;
   imageUrl: string | null;
   offers: ProductOffer[];
+
+  country: string | null;
+  city: string | null;
+  street: string | null;
+  postalCode: string | null;
+  houseNumber: string | null;
+  googleMapsLink: string | null;
 };
 
 export async function getProductById(productId: number): Promise<ProductDetails> {
@@ -1071,6 +1122,49 @@ export async function createGuestPaymentIntent(
   if (!response.ok) {
     const error = new Error(
       "Failed to create guest payment intent"
+    ) as Error & {
+      status?: number;
+    };
+
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+
+
+
+
+
+
+
+export type CitySearchResult = {
+  name: string;
+  displayName: string;
+  latitude: number;
+  longitude: number;
+};
+
+export async function searchCities(
+  name: string
+): Promise<CitySearchResult[]> {
+  const response = await fetch(
+    `http://localhost:8080/locations/cities?name=${encodeURIComponent(
+      name.trim()
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const error = new Error(
+      "Failed to search cities"
     ) as Error & {
       status?: number;
     };

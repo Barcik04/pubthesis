@@ -4,6 +4,8 @@ import { getProductById, type ProductDetails } from "../api/productsApi";
 import { Link } from "react-router-dom";
 
 import "../styles/ListingPage.css";
+import location from "../photos/location.png"; 
+
 
 function ListingPage() {
   const { productId } = useParams();
@@ -73,6 +75,27 @@ function ListingPage() {
               </li>
             ))}
           </ul>
+          <div className="link-wrapper"> 
+            {product.googleMapsLink &&
+              product.street &&
+              product.houseNumber &&
+              product.postalCode &&
+              product.city && (
+                <a
+                  href={product.googleMapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="maps-link"
+                >
+                  {product.street} {product.houseNumber}, {product.postalCode}{" "}
+                  {product.city}
+                </a>
+              )
+            }
+            <img src={location} alt="Application logo" />
+          </div>
+          
+
         </div>
 
         <div className="middle-column">

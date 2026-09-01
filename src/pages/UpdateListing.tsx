@@ -54,6 +54,11 @@ type Product = {
   description: string;
   price: number;
   types: string[];
+  street: string;
+  houseNumber: string;
+  city: string;
+  postalCode: string;
+  country: string;
   imageUrl?: string | null;
   offers: Offer[];
 };
@@ -71,6 +76,13 @@ function UpdateListing() {
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState(product?.price?.toString() ?? "");
   const [types, setTypes] = useState(product?.types?.join(", ") ?? "");
+  const [street, setStreet] = useState(product?.street ?? "");
+  const [houseNumber, setHouseNumber] = useState(
+    product?.houseNumber ?? ""
+  );
+  const [city, setCity] = useState(product?.city ?? "");
+  const [postalCode, setPostalCode] = useState(product?.postalCode ?? "");
+  const [country, setCountry] = useState(product?.country ?? "");
   const [image, setImage] = useState<File | null>(null);
   const [expandedOfferKey, setExpandedOfferKey] = useState<string | null>(null);
   const [offers, setOffers] = useState<Offer[]>(product?.offers ?? []);
@@ -307,6 +319,11 @@ async function handleAddOfferToLocalList() {
           .split(",")
           .map((type) => type.trim())
           .filter((type) => type.length > 0),
+        street: street,
+        houseNumber: houseNumber,
+        city: city,
+        postalCode: postalCode,
+        country: country,
       };
 
       await updateProduct(parsedProductId, data, image);
@@ -379,6 +396,65 @@ async function handleAddOfferToLocalList() {
               placeholder="Describe your product or service..."
               value={description}
               onChange={(event) => setDescription(event.target.value)}
+              required
+            />
+          </label>
+
+          <div className="form-row">
+            <label>
+              Street
+              <input
+                type="text"
+                placeholder="e.g. Kościuszki"
+                value={street}
+                onChange={(event) => setStreet(event.target.value)}
+                required
+              />
+            </label>
+
+            <label>
+              House number
+              <input
+                type="text"
+                placeholder="e.g. 15A"
+                value={houseNumber}
+                onChange={(event) => setHouseNumber(event.target.value)}
+                required
+              />
+            </label>
+          </div>
+
+          <div className="form-row">
+            <label>
+              City
+              <input
+                type="text"
+                placeholder="e.g. Olsztyn"
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                required
+              />
+            </label>
+
+            <label>
+              Postal code
+              <input
+                type="text"
+                placeholder="e.g. 10-001"
+                value={postalCode}
+                onChange={(event) => setPostalCode(event.target.value)}
+                required
+              />
+            </label>
+          </div>
+
+          <label>
+            Country
+            <input
+              type="text"
+              placeholder="e.g. Poland"
+              value={country}
+              onChange={(event) => setCountry(event.target.value)}
               required
             />
           </label>

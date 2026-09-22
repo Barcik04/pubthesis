@@ -1,0 +1,26 @@
+# Build stage: compile the Spring Boot application
+FROM eclipse-temurin:21-jdk AS build
+LABEL authors="igorb"
+
+WORKDIR /app
+
+COPY mvnw .
+COPY pom.xml .
+COPY .mvn .mvn
+
+RUN chmod +x mvnw
+RUN ./mvnw -B dependency:go-offline
+
+COPY . .
+
+RUN ./mvnw -B package -DskipTests
+
+
+# Runtime stage: run the built JAR
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

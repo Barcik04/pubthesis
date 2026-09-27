@@ -56,3 +56,22 @@ export async function register(data: RegisterRequest): Promise<void> {
     throw new Error(error.message || "Registration failed");
   }
 }
+
+
+
+
+export async function logout(): Promise<void> {
+  try {
+    await fetch(`${API_URL}/signout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("email");
+    localStorage.removeItem("roles");
+  }
+}

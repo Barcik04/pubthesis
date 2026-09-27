@@ -48,7 +48,7 @@ function ProductsMap({ products }: ProductsMapProps) {
       center={[avgLat, avgLng]}
       zoom={6}
       scrollWheelZoom={true}
-      style={{ height: "500px", width: "100%" }}
+      style={{ height: "100%", width: "100%" }}
     >
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'

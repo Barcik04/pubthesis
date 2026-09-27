@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getMyProducts, deleteProduct, getProductTypes } from "../api/productsApi";
+import { logout } from "../api/authApi";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import edit from "../photos/edit.png"; 
 import bin from "../photos/bin.png"; 
@@ -34,6 +36,8 @@ function User() {
 
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
+
+  const navigate = useNavigate();
 
 
   const pageSize = 20;
@@ -98,6 +102,11 @@ function User() {
 
             return [...currentTypes, type];
         });
+    }
+
+    function handleLogout() {
+    logout();
+    navigate("/signin"); 
     }
 
     async function handleDeleteProduct(productId: number) {
@@ -294,6 +303,13 @@ function User() {
                     <Link to="/invoice-manager" className="create-listing-button-user">
                         Invoices Manager
                     </Link>
+                     <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="logout-btn"
+                    >
+                        Log out
+                    </button>
                 </aside>
                 
             </div>

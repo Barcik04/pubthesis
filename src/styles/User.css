@@ -380,3 +380,31 @@
 .details-button-user:hover {
     background: #1d4ed8;
 }
+
+
+.logout-btn {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 999px;
+    background: #b9142aa2;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    margin: 70px 0 10px 0;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+
+
+.logout-btn:hover {
+    background: #a80000;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+}

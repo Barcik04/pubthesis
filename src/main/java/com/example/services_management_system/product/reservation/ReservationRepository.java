@@ -65,8 +65,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
     @Modifying
     @Transactional
     @Query("""
-        DELETE FROM Reservation r
-        WHERE r.status <> :status
-          AND r.paymentExpiresAt < :time
+    DELETE FROM Reservation r
+    WHERE r.status <> :status
+      AND r.paymentExpiresAt < :time
+      AND r.payment_method = com.example.services_management_system.product.reservation.PaymentMethod.CARD
     """)
-    void deleteAllByStatusAndPaymentExpiresAtBefore(ReservationStatus status, Instant time);}
+    void deleteAllByStatusAndPaymentExpiresAtBefore(ReservationStatus status, Instant time);
+
+    }

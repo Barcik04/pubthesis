@@ -1,6 +1,7 @@
 package com.example.services_management_system.utils.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -137,5 +138,26 @@ public class GlobalExceptionHandler {
         log.warn("Invoice is not available {} {} {} {}", request.getMethod(), request.getRequestURI(), e.getMessage(), apiError.status());
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
+    }
+
+
+
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    public ResponseEntity<ApiError> handleConcurrencyFailureException(
+            ConcurrencyFailureException e,
+            HttpServletRequest request
+    ) {
+
+        ApiError apiError = new ApiError(
+                "Cannot create a reservation for that date because theres already an existing reservation for that date",
+                HttpStatus.CONFLICT.value(),
+                ZonedDateTime.now(),
+                request.getRequestURI(),
+                null
+        );
+
+        log.warn("Concurrency failure on {} {} {} {}", request.getMethod(), request.getRequestURI(), e.getMessage(), apiError.status());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
 }

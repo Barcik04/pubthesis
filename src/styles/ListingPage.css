@@ -1,13 +1,14 @@
 .page-listing {
   min-height: 100vh;
-  padding: 140px 100px 60px;
+  padding: 140px clamp(20px, 6vw, 100px) 60px;
+  box-sizing: border-box;
   color: #111827;
   font-family: Arial, sans-serif;
 }
 
 .listing-content {
   display: grid;
-  grid-template-columns: 420px 360px 120px;
+  grid-template-columns: minmax(260px, 420px) minmax(220px, 1fr) minmax(340px, 600px);
   align-items: flex-start;
   gap: 40px;
 }
@@ -18,8 +19,9 @@
 }
 
 .product-image-placeholder {
-  width: 420px;
-  height: 260px;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 420 / 260;
   border-radius: 16px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: #e5e7eb;
@@ -67,8 +69,9 @@
 
 .name-wrapper h1 {
   margin: 0 0 16px;
-  font-size: 50px;
+  font-size: clamp(32px, 3.5vw, 50px);
   line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .name-wrapper p {
@@ -81,19 +84,18 @@
 .offers-wrapper-listing {
   display: flex;
   flex-direction: column;
-  margin-left: 140px;
+  min-width: 0;
 }
 
 .offers-wrapper-listing h2 {
   margin: 0 0 18px;
-  font-size: 50px;
+  font-size: clamp(32px, 3.5vw, 50px);
 }
 
 .offers-list-listing {
   list-style: none;
   padding: 0;
   margin: 0;
-  min-width: 600px;
 }
 
 .offer-info {
@@ -105,6 +107,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  gap: 16px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 16px;
@@ -141,8 +144,9 @@
   border-radius: 8px;
   background-color: #11182748;
   color: white;
-  width: 100px;
+  min-width: 100px;
   height: 20px;
+  flex-shrink: 0;
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;
@@ -185,4 +189,29 @@
   height: 20px;
   /* filter: invert(1); */
   margin: 20px 0 0 10px;
+}
+
+/* Smaller laptops: offers move below image + description */
+@media (max-width: 1280px) {
+  .listing-content {
+    grid-template-columns: minmax(260px, 420px) minmax(0, 1fr);
+  }
+
+  .offers-wrapper-listing {
+    grid-column: 1 / -1;
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .listing-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Short screens (e.g. 768px tall laptops) */
+@media (max-height: 820px) {
+  .page-listing {
+    padding-top: 100px;
+  }
 }

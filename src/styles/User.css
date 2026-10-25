@@ -1,7 +1,7 @@
 .user-page {
     min-height: 100vh;
     width: 100%;
-    padding: 80px 40px 40px;
+    padding: 80px clamp(16px, 3vw, 40px) 40px;
     background: #f5f5f5;
     color: #1f2937;
     font-family: Arial, sans-serif;
@@ -248,6 +248,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 50px;
 }
@@ -256,6 +257,8 @@
     display: flex;
     margin: 0;
     width: 420px;
+    max-width: 100%;
+    flex: 0 1 420px;
 }
 
 .search-input-user {
@@ -407,4 +410,32 @@
     background: #a80000;
     transform: translateY(-1px);
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+@media (max-width: 1280px) {
+    .products-card-user {
+        margin-top: 40px;
+        padding: 16px 0;
+    }
+
+    .filters-wrap-user {
+        margin-bottom: 32px;
+    }
+}
+
+/* Stack the side panel under the list on narrow laptops */
+@media (max-width: 960px) {
+    .profile-content-user {
+        flex-direction: column-reverse;
+    }
+
+    .right-list-user {
+        position: static;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .logout-btn {
+        margin-top: 20px;
+    }
 }

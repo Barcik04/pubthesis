@@ -1,11 +1,13 @@
 .reservation-page {
   display: flex;
   justify-content: center;
-  padding-top: 60px;
+  padding: 60px 20px 40px;
 }
 
 .calendar {
-  width: 600px;
+  width: 100%;
+  max-width: 600px;
+  box-sizing: border-box;
   background: white;
   padding: 30px;
   border-radius: 20px;
@@ -105,7 +107,9 @@
 }
 
 .popup {
-  width: 420px;
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
   max-height: 85vh;
   overflow-y: auto;
   background: white;
@@ -310,4 +314,44 @@
 .payment-popup button:disabled {
     cursor: not-allowed;
     opacity: 0.65;
+}
+
+/* Short laptop screens: keep the whole calendar visible */
+@media (max-height: 820px) {
+  .reservation-page {
+    padding-top: 40px;
+  }
+
+  .calendar {
+    margin-top: 40px;
+    padding: 22px;
+  }
+
+  .calendar-header {
+    margin-bottom: 16px;
+  }
+
+  .day {
+    height: 46px;
+  }
+
+  .weekdays,
+  .days {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar {
+    padding: 18px;
+  }
+
+  .day {
+    height: 44px;
+  }
+
+  .weekdays,
+  .days {
+    gap: 6px;
+  }
 }

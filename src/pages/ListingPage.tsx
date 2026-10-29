@@ -17,7 +17,7 @@ function ListingPage() {
   useEffect(() => {
     async function loadProduct() {
       if (!productId) {
-        setError("Product id is missing");
+        setError("Brak identyfikatora ogłoszenia");
         return;
       }
 
@@ -31,7 +31,7 @@ function ListingPage() {
         console.log(data.offers);
         setProduct(data);
       } catch (err) {
-        setError("Failed to load product");
+        setError("Nie udało się wczytać ogłoszenia");
       } finally {
         setLoading(false);
       }
@@ -41,7 +41,7 @@ function ListingPage() {
   }, [productId]);
 
   if (loading) {
-    return <p>Loading product...</p>;
+    return <p>Wczytywanie ogłoszenia...</p>;
   }
 
   if (error) {
@@ -49,7 +49,7 @@ function ListingPage() {
   }
 
   if (!product) {
-    return <p>Product not found</p>;
+    return <p>Nie znaleziono ogłoszenia</p>;
   }
 
   return (
@@ -64,7 +64,7 @@ function ListingPage() {
                 className="product-image-listing"
               />
             ) : (
-              <span>No image</span>
+              <span>Brak zdjęcia</span>
             )}
           </div>
 
@@ -92,7 +92,7 @@ function ListingPage() {
                 </a>
               )
             }
-            <img src={location} alt="Application logo" />
+            <img src={location} alt="Lokalizacja" />
           </div>
           
 
@@ -106,10 +106,10 @@ function ListingPage() {
         </div>
 
         <div className="offers-wrapper-listing">
-          <h2>Offers</h2>
+          <h2>Oferty</h2>
 
           {product.offers.length === 0 ? (
-            <p>No offers yet</p>
+            <p>Brak ofert</p>
           ) : (
             <ul className="offers-list-listing">
               {product.offers.map((offer) => (
@@ -121,7 +121,7 @@ function ListingPage() {
                     <p>{offer.duration} min</p>
                   </div>
                   <Link to={`/reservation/${offer.id}`} className="offer-check-button">
-                    Check
+                    Sprawdź
                   </Link>
                 </li>
               ))}

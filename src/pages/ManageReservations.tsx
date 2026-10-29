@@ -27,7 +27,7 @@ function ManageReservations() {
   useEffect(() => {
     async function loadReservations() {
       if (!productId) {
-        setError("Product ID is missing");
+        setError("Brak identyfikatora ogłoszenia");
         return;
       }
 
@@ -50,7 +50,7 @@ function ManageReservations() {
         setReservations(data.content);
         setTotalPages(data.totalPages);
       } catch {
-        setError("Failed to load reservations");
+        setError("Nie udało się wczytać rezerwacji");
       } finally {
         setLoading(false);
       }
@@ -68,7 +68,7 @@ function ManageReservations() {
 
   async function handleRevokeReservation(reservationId: number) {
     const confirmed = window.confirm(
-      "Are you sure you want to revoke this reservation?"
+      "Czy na pewno chcesz odwołać tę rezerwację?"
     );
 
     if (!confirmed) {
@@ -87,14 +87,14 @@ function ManageReservations() {
         )
       );
     } catch {
-      setError("Failed to revoke reservation");
+      setError("Nie udało się odwołać rezerwacji");
     } finally {
       setRevokingId(null);
     }
   }
 
   function formatDate(date: string) {
-    return new Date(date).toLocaleString();
+    return new Date(date).toLocaleString("pl-PL");
   }
 
   function goToPreviousPage() {
@@ -118,24 +118,24 @@ function ManageReservations() {
   return (
     <main className="manage-reservations-page">
       <h1 className="manage-reservations-title">
-        Manage reservations
+        Zarządzaj rezerwacjami
       </h1>
 
       <section className="manage-reservations-card">
         <div className="manage-reservations-header">
           <div>
-            <h2>Product reservations</h2>
+            <h2>Rezerwacje ogłoszenia</h2>
           </div>
 
           <Link to="/user" className="back-to-profile-button">
-            Back to profile
+            Wróć do profilu
           </Link>
         </div>
         <div className="manage-reservations-filters">
           <input
             type="text"
             value={username}
-            placeholder="Search by customer..."
+            placeholder="Szukaj po kliencie..."
             className="manage-filter-input"
             onChange={(event) => {
               setPage(0);
@@ -146,7 +146,7 @@ function ManageReservations() {
           <input
             type="text"
             value={offerName}
-            placeholder="Search by offer name..."
+            placeholder="Szukaj po nazwie oferty..."
             className="manage-filter-input"
             onChange={(event) => {
               setPage(0);
@@ -157,7 +157,7 @@ function ManageReservations() {
           <input
             type="text"
             value={firstName}
-            placeholder="Search by first name..."
+            placeholder="Szukaj po imieniu..."
             className="manage-filter-input"
             onChange={(event) => {
               setPage(0);
@@ -168,7 +168,7 @@ function ManageReservations() {
           <input
             type="text"
             value={lastName}
-            placeholder="Search by last name..."
+            placeholder="Szukaj po nazwisku..."
             className="manage-filter-input"
             onChange={(event) => {
               setPage(0);
@@ -187,7 +187,7 @@ function ManageReservations() {
               lastName === ""
             }
           >
-            Clear
+            Wyczyść
           </button>
         </div>
 
@@ -195,14 +195,14 @@ function ManageReservations() {
 
         {loading && (
           <p className="manage-reservations-loading">
-            Loading reservations...
+            Wczytywanie rezerwacji...
           </p>
         )}
 
         {!loading && !error && reservations.length === 0 && (
           <div className="no-reservations">
-            <h3>No reservations yet</h3>
-            <p>This product does not have any reservations.</p>
+            <h3>Brak rezerwacji</h3>
+            <p>To ogłoszenie nie ma jeszcze żadnych rezerwacji.</p>
           </div>
         )}
 
@@ -222,7 +222,7 @@ function ManageReservations() {
                     <span
                       className={`payment-method payment-method-${reservation.paymentMethod.toLowerCase()}`}
                     >
-                      {reservation.paymentMethod === "CASH" ? "Cash" : "Card"}
+                      {reservation.paymentMethod === "CASH" ? "Gotówka" : "Karta"}
                     </span>
 
                     <span
@@ -230,9 +230,9 @@ function ManageReservations() {
                         .toLowerCase()
                         .replace("_", "-")}`}
                     >
-                      {reservation.status === "CONFIRMED" && "Confirmed"}
-                      {reservation.status === "PENDING_PAYMENT" && "Pending payment"}
-                      {reservation.status === "CANCELLED" && "Cancelled"}
+                      {reservation.status === "CONFIRMED" && "Potwierdzona"}
+                      {reservation.status === "PENDING_PAYMENT" && "Oczekuje na płatność"}
+                      {reservation.status === "CANCELLED" && "Anulowana"}
                     </span>
                   </div>
                 </div>
@@ -243,32 +243,32 @@ function ManageReservations() {
 
                 <div className="manage-reservation-details">
                   <div>
-                    <span>Customer</span>
+                    <span>Klient</span>
                     <strong>{reservation.username}</strong>
                   </div>
 
                   <div>
-                    <span>Start time</span>
+                    <span>Początek</span>
                     <strong>{formatDate(reservation.startTime)}</strong>
                   </div>
 
                   <div>
-                    <span>End time</span>
+                    <span>Koniec</span>
                     <strong>{formatDate(reservation.endTime)}</strong>
                   </div>
 
                   <div>
-                    <span>Duration</span>
+                    <span>Czas trwania</span>
                     <strong>{reservation.durationMinutes} min</strong>
                   </div>
 
                   <div>
-                    <span>Price</span>
+                    <span>Cena</span>
                     <strong>{reservation.offerPrice} PLN</strong>
                   </div>
 
                   <div>
-                    <span>Name</span>
+                    <span>Imię i nazwisko</span>
                     <strong>
                       {reservation.firstName} {reservation.lastName}
                     </strong>
@@ -285,8 +285,8 @@ function ManageReservations() {
                     disabled={revokingId === reservation.id}
                   >
                     {revokingId === reservation.id
-                      ? "Revoking..."
-                      : "Revoke"}
+                      ? "Odwoływanie..."
+                      : "Odwołaj"}
                   </button>
                 </div>
               </li>
@@ -305,7 +305,7 @@ function ManageReservations() {
           </button>
 
           <span className="manage-pagination-info">
-            Page {page + 1} of {Math.max(totalPages, 1)}
+            Strona {page + 1} z {Math.max(totalPages, 1)}
           </span>
 
           <button

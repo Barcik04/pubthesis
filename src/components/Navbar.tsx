@@ -9,17 +9,17 @@ function Navbar() {
   return (
     <header className="navbar">
       <Link to="/start" className="navbar-logo">
-        <img src={logo} alt="Application logo" />
+        <img src={logo} alt="Logo aplikacji" />
       </Link>
 
       <nav className="navbar-links">
-        <Link to="/signin">Sign in</Link>
-        <Link to="/signup">Sign up</Link>
+        <Link to="/signin">Zaloguj się</Link>
+        <Link to="/signup">Zarejestruj się</Link>
       </nav>
 
       <div className="right-navbar">
         <Link to="/user" className="navbar-logo">
-          <img src={user} alt="Application logo" />
+          <img src={user} alt="Profil użytkownika" />
         </Link>
       </div>
 

@@ -24,7 +24,7 @@ function GuestReservation() {
     event.preventDefault();
 
     if (!offerId || !startTime) {
-      setError("Missing offer or time information");
+      setError("Brak informacji o ofercie lub terminie");
       return;
     }
 
@@ -90,7 +90,7 @@ function GuestReservation() {
 
   return (
     <main className="guest-reservation-page">
-      <h1 className="guest-reservation-title">Guest reservation</h1>
+      <h1 className="guest-reservation-title">Rezerwacja jako gość</h1>
 
       <form className="guest-reservation-form" onSubmit={handleSubmit}>
         <p className="guest-reservation-info">
@@ -100,7 +100,7 @@ function GuestReservation() {
         {error && <p className="error">{error}</p>}
 
         <label className="guest-reservation-label">
-          First name
+          Imię
           <input
             type="text"
             value={firstName}
@@ -110,7 +110,7 @@ function GuestReservation() {
         </label>
 
         <label className="guest-reservation-label">
-          Last name
+          Nazwisko
           <input
             type="text"
             value={lastName}
@@ -129,16 +129,16 @@ function GuestReservation() {
           />
         </label>
 
-        <p className="guest-reservation-divider">Or sign in</p>
+        <p className="guest-reservation-divider">Lub zaloguj się</p>
 
         <Link to="/signin" className="guest-reservation-secondary-button">
-          Sign in
+          Zaloguj się
         </Link>
 
-        <p className="guest-reservation-divider">You don't have an account?</p>
+        <p className="guest-reservation-divider">Nie masz konta?</p>
 
         <Link to="/signup" className="guest-reservation-secondary-button">
-          Register
+          Zarejestruj się
         </Link>
 
         <button
@@ -146,7 +146,7 @@ function GuestReservation() {
           className="guest-reservation-button"
           disabled={loading}
         >
-          {loading ? "Processing..." : "Proceed"}
+          {loading ? "Przetwarzanie..." : "Przejdź dalej"}
         </button>
       </form>
     </main>

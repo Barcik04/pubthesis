@@ -55,7 +55,7 @@ function Start() {
         const data = await getProductTypes();
         setAvailableTypes(data);
       } catch (err) {
-        setError("Failed to load product types");
+        setError("Nie udało się wczytać kategorii");
       }
     }
 
@@ -91,7 +91,7 @@ function Start() {
         }
       } catch {
         if (!cancelled) {
-          setCityError("Failed to search cities");
+          setCityError("Nie udało się wyszukać miast");
           setCityResults([]);
         }
       } finally {
@@ -130,7 +130,7 @@ function Start() {
         setProducts(data.content);
         setTotalPages(data.totalPages);
       } catch (err) {
-        setError("Failed to load products");
+        setError("Nie udało się wczytać ogłoszeń");
       } finally {
         setLoading(false);
       }
@@ -207,14 +207,14 @@ function handleCitySelect(city: CitySearchResult) {
 
 return (
   <main className="page">
-    <h1>Listings</h1>
+    <h1>Ogłoszenia</h1>
 
     <section className="products-card">
       <div className="filters-wrap">
         <div className="search-form">
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder="Szukaj ogłoszeń..."
             value={searchName}
             onChange={(event) => {
               setPage(0);
@@ -230,7 +230,7 @@ return (
           >
             <input
               type="text"
-              placeholder="Search by city..."
+              placeholder="Szukaj po mieście..."
               value={cityInput}
               onChange={(event) => {
                 setCityInput(event.target.value);
@@ -242,7 +242,7 @@ return (
 
           {cityLoading && (
             <div className="city-search-message">
-              Searching cities...
+              Wyszukiwanie miast...
             </div>
           )}
 
@@ -257,8 +257,8 @@ return (
               <table className="city-results-table">
                 <thead>
                   <tr>
-                    <th>City</th>
-                    <th>Location</th>
+                    <th>Miasto</th>
+                    <th>Lokalizacja</th>
                   </tr>
                 </thead>
 
@@ -296,7 +296,7 @@ return (
             onClick={() => setIsTypesOpen((current) => !current)}
           >
             <span>
-              Categories
+              Kategorie
               {selectedTypes.length > 0 && ` (${selectedTypes.length})`}
             </span>
 
@@ -370,7 +370,7 @@ return (
           className="reset-filters-button"
           onClick={resetFilters}
         >
-          Reset filters
+          Wyczyść filtry
         </button>
       </div>
       <div className="map-section">
@@ -379,7 +379,7 @@ return (
           className="show-map-button"
           onClick={() => setShowMap((current) => !current)}
         >
-          {showMap ? "Hide map" : "Show map"}
+          {showMap ? "Ukryj mapę" : "Pokaż mapę"}
         </button>
 
         <div className="map-window">
@@ -387,7 +387,7 @@ return (
             <ProductsMap products={products} />
           ) : (
             <p className="map-placeholder">
-              Click "Show map" to display locations of products.
+              Kliknij „Pokaż mapę”, aby zobaczyć lokalizacje ogłoszeń.
             </p>
           )}
         </div>
@@ -395,7 +395,7 @@ return (
 
       <div className="status-row">
         {error && <p className="error">{error}</p>}
-        {loading && <p className="loading">Loading products...</p>}
+        {loading && <p className="loading">Wczytywanie ogłoszeń...</p>}
       </div>
 
       <ul className="products-list">
@@ -416,7 +416,7 @@ return (
                 <p className="product-price">od {product.price} PLN</p>
               </div>
               <Link to={`/listing-page/${product.id}`} className="details-button">
-                View details
+                Zobacz szczegóły
               </Link>
             </li>
           ))}
@@ -433,7 +433,7 @@ return (
       </button>
 
       <span className="pagination-info">
-        Page {page + 1} of {Math.max(totalPages, 1)}
+        Strona {page + 1} z {Math.max(totalPages, 1)}
       </span>
 
       <button

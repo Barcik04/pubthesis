@@ -36,13 +36,13 @@ const DAYS_OF_WEEK = [
 ];
 
 const DAY_LABELS: Record<string, string> = {
-  MONDAY: "Monday",
-  TUESDAY: "Tuesday",
-  WEDNESDAY: "Wednesday",
-  THURSDAY: "Thursday",
-  FRIDAY: "Friday",
-  SATURDAY: "Saturday",
-  SUNDAY: "Sunday",
+  MONDAY: "Poniedziałek",
+  TUESDAY: "Wtorek",
+  WEDNESDAY: "Środa",
+  THURSDAY: "Czwartek",
+  FRIDAY: "Piątek",
+  SATURDAY: "Sobota",
+  SUNDAY: "Niedziela",
 };
 
 function CreateListing() {
@@ -162,12 +162,12 @@ function CreateListing() {
       offerPrice.trim().length === 0 ||
       offerDurationMinutes.trim().length === 0
     ) {
-      setError("Fill all offer fields");
+      setError("Wypełnij wszystkie pola oferty");
       return;
     }
 
     if (offerAvailabilities.length === 0) {
-      setError("Choose at least one available day");
+      setError("Wybierz co najmniej jeden dostępny dzień");
       return;
     }
 
@@ -176,12 +176,12 @@ function CreateListing() {
         availability.startTime.trim().length === 0 ||
         availability.endTime.trim().length === 0
       ) {
-        setError("Fill start and end time for every selected day");
+        setError("Podaj godzinę rozpoczęcia i zakończenia dla każdego wybranego dnia");
         return;
       }
 
       if (availability.endTime <= availability.startTime) {
-        setError("End time must be after start time");
+        setError("Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia");
         return;
       }
     }
@@ -277,25 +277,25 @@ function CreateListing() {
       setImage(null);
       setNewOffers([]);
     } catch (err) {
-      setError("Failed to create listing");
+      setError("Nie udało się dodać ogłoszenia");
     }
   }
 
   return (
     <main className="page">
-      <h1>Create Listing</h1>
+      <h1>Dodaj ogłoszenie</h1>
 
       <section className="create-card">
         <div className="create-header">
-          <p>Add a new product or service to your offer.</p>
+          <p>Dodaj nowe ogłoszenie ze swoją ofertą.</p>
         </div>
 
         <form className="create-form" onSubmit={handleSubmit}>
           <label>
-            Product name
+            Nazwa ogłoszenia
             <input
               type="text"
-              placeholder="e.g. Website design"
+              placeholder="np. Pub Pod Kogutem"
               value={name}
               onChange={(event) => setName(event.target.value)}
               required
@@ -303,9 +303,9 @@ function CreateListing() {
           </label>
 
           <label>
-            Description
+            Opis
             <textarea
-              placeholder="Describe your product or service..."
+              placeholder="Opisz swój lokal lub usługę..."
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               required
@@ -314,10 +314,10 @@ function CreateListing() {
 
           <div className="form-row">
             <label>
-              Street
+              Ulica
               <input
                 type="text"
-                placeholder="e.g. Kościuszki"
+                placeholder="np. Kościuszki"
                 value={street}
                 onChange={(event) => setStreet(event.target.value)}
                 required
@@ -325,10 +325,10 @@ function CreateListing() {
             </label>
 
             <label>
-              House number
+              Numer budynku
               <input
                 type="text"
-                placeholder="e.g. 15A"
+                placeholder="np. 15A"
                 value={houseNumber}
                 onChange={(event) => setHouseNumber(event.target.value)}
                 required
@@ -338,10 +338,10 @@ function CreateListing() {
 
           <div className="form-row">
             <label>
-              City
+              Miasto
               <input
                 type="text"
-                placeholder="e.g. Olsztyn"
+                placeholder="np. Olsztyn"
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
                 required
@@ -349,10 +349,10 @@ function CreateListing() {
             </label>
 
             <label>
-              Postal code
+              Kod pocztowy
               <input
                 type="text"
-                placeholder="e.g. 10-001"
+                placeholder="np. 10-001"
                 value={postalCode}
                 onChange={(event) => setPostalCode(event.target.value)}
                 required
@@ -361,10 +361,10 @@ function CreateListing() {
           </div>
 
           <label>
-            Country
+            Kraj
             <input
               type="text"
-              placeholder="e.g. Poland"
+              placeholder="np. Polska"
               value={country}
               onChange={(event) => setCountry(event.target.value)}
               required
@@ -373,10 +373,10 @@ function CreateListing() {
 
           <div className="form-row">
             <label>
-              Price from
+              Cena od
               <input
                 type="number"
-                placeholder="e.g. 199"
+                placeholder="np. 199"
                 min="0"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
@@ -385,10 +385,10 @@ function CreateListing() {
             </label>
 
             <label>
-              Type
+              Kategoria
               <input
                 type="text"
-                placeholder="e.g. IT, Design, Repair"
+                placeholder="np. Pub, Bar, Restauracja"
                 value={types}
                 onChange={(event) => setTypes(event.target.value)}
                 required
@@ -398,19 +398,19 @@ function CreateListing() {
 
           <div className="offers-section">
             <div className="offers-wrapper">
-              <h2>Offers</h2>
+              <h2>Oferty</h2>
 
               <button
                 type="button"
                 className="add-btn"
                 onClick={handleOpenOfferPopup}
               >
-                <img src={plus} alt="add-plus-btn" />
+                <img src={plus} alt="Dodaj ofertę" />
               </button>
             </div>
 
             {newOffers.length === 0 ? (
-              <p>No offers yet</p>
+              <p>Brak ofert</p>
             ) : (
             <ul className="offers-list">
               {newOffers.map((offer, index) => {
@@ -424,14 +424,14 @@ function CreateListing() {
                         <h3>{offer.name}</h3>
                         <p>{offer.description}</p>
                         <p>{offer.price} PLN</p>
-                        <p>{offer.durationMinutes} minutes</p>
+                        <p>{offer.durationMinutes} min</p>
                         <p className="cash-availability-show">
-                          <span>Cash payment:</span>
+                          <span>Płatność gotówką:</span>
 
                           <strong>
                             {offer.cashPaymentAvailability
-                              ? "Available"
-                              : "Unavailable"}
+                              ? "Dostępna"
+                              : "Niedostępna"}
                           </strong>
                         </p>
                       </div>
@@ -442,7 +442,7 @@ function CreateListing() {
                           className="edit-offer-button-create-listing"
                           onClick={() => handleOpenEditOfferPopup(index)}
                         >
-                          <img src={edit} alt="edit offer" />
+                          <img src={edit} alt="Edytuj ofertę" />
                         </button>
 
                         <button
@@ -450,7 +450,7 @@ function CreateListing() {
                           className="delete-offer-button-create-listing"
                           onClick={() => handleDeleteOffer(index)}
                         >
-                          <img src={bin} alt="delete offer" />
+                          <img src={bin} alt="Usuń ofertę" />
                         </button>
                       </div>
                     </div>
@@ -460,12 +460,12 @@ function CreateListing() {
                       className="offer-expand-btn"
                       onClick={() => setExpandedOfferKey(isExpanded ? null : offerKey)}
                     >
-                      {isExpanded ? "▲ Hide availability" : "▼ Show availability"}
+                      {isExpanded ? "▲ Ukryj dostępność" : "▼ Pokaż dostępność"}
                     </button>
 
                     {isExpanded && (
                       <div className="offer-availabilities">
-                        <p>Available time ranges:</p>
+                        <p>Dostępne przedziały czasowe:</p>
 
                         {offer.availabilities.map((availability) => (
                           <p key={availability.dayOfWeek}>
@@ -483,7 +483,7 @@ function CreateListing() {
           </div>
 
           <label>
-            Image
+            Zdjęcie
             <div className="image-row">
               <input
                 type="file"
@@ -500,7 +500,7 @@ function CreateListing() {
           {error && <p className="error">{error}</p>}
 
           <button className="submit-btn" type="submit">
-            Create listing
+            Dodaj ogłoszenie
           </button>
         </form>
       </section>
@@ -511,44 +511,44 @@ function CreateListing() {
             className="offer-popup"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2>{editingOfferIndex === null ? "Add offer" : "Edit offer"}</h2>
+            <h2>{editingOfferIndex === null ? "Dodaj ofertę" : "Edytuj ofertę"}</h2>
 
             <label>
-              Offer name
+              Nazwa oferty
               <input
                 type="text"
-                placeholder="e.g. Basic package"
+                placeholder="np. Rezerwacja stolika"
                 value={offerName}
                 onChange={(event) => setOfferName(event.target.value)}
               />
             </label>
 
             <label>
-              Offer description
+              Opis oferty
               <textarea
-                placeholder="Describe this offer..."
+                placeholder="Opisz tę ofertę..."
                 value={offerDescription}
                 onChange={(event) => setOfferDescription(event.target.value)}
               />
             </label>
 
             <label>
-              Offer price
+              Cena oferty
               <input
                 type="number"
                 min="0"
-                placeholder="e.g. 99"
+                placeholder="np. 99"
                 value={offerPrice}
                 onChange={(event) => setOfferPrice(event.target.value)}
               />
             </label>
 
             <label>
-              Duration in minutes
+              Czas trwania (min)
               <input
                 type="number"
                 min="1"
-                placeholder="e.g. 60"
+                placeholder="np. 60"
                 value={offerDurationMinutes}
                 onChange={(event) =>
                   setOfferDurationMinutes(event.target.value)
@@ -566,11 +566,11 @@ function CreateListing() {
                 }
               />
 
-              <span>Allow cash payment</span>
+              <span>Zezwól na płatność gotówką</span>
             </label>
 
             <div>
-              <p className="available-days">Available days</p>
+              <p className="available-days">Dostępne dni</p>
 
               {DAYS_OF_WEEK.map((day) => {
                 const availability = offerAvailabilities.find(
@@ -592,7 +592,7 @@ function CreateListing() {
                     {availability && (
                       <div className="form-row availability-time-row">
                         <label>
-                          Start time
+                          Godzina rozpoczęcia
                           <input
                             type="time"
                             value={availability.startTime}
@@ -607,7 +607,7 @@ function CreateListing() {
                         </label>
 
                         <label>
-                          End time
+                          Godzina zakończenia
                           <input
                             type="time"
                             value={availability.endTime}
@@ -632,7 +632,7 @@ function CreateListing() {
               className="submit-btn"
               onClick={handleAddOfferToLocalList}
             >
-              {editingOfferIndex === null ? "Add offer" : "Save changes"}
+              {editingOfferIndex === null ? "Dodaj ofertę" : "Zapisz zmiany"}
             </button>
           </div>
         </div>

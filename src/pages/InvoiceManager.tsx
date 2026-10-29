@@ -47,7 +47,7 @@ function InvoiceManager() {
         setInvoices(data.content);
         setTotalPages(data.totalPages);
       } catch {
-        setError("Failed to load invoice requests");
+        setError("Nie udało się wczytać wniosków o fakturę");
       } finally {
         setLoading(false);
       }
@@ -72,7 +72,7 @@ function InvoiceManager() {
 
   function formatDate(date: string | null) {
     if (!date) {
-      return "Not issued";
+      return "Niewystawiona";
     }
 
     return new Date(date).toLocaleString("pl-PL");
@@ -91,7 +91,7 @@ function InvoiceManager() {
         )
       );
     } catch {
-      setError("Failed to mark invoice as issued");
+      setError("Nie udało się zmienić statusu faktury");
     } finally {
       setIssuingInvoiceId(null);
     }
@@ -100,7 +100,7 @@ function InvoiceManager() {
   return (
     <main className="invoice-manager-page">
       <section className="invoice-manager-card">
-        <h1>Invoice requests</h1>
+        <h1>Wnioski o fakturę</h1>
 
         <div className="invoice-manager-filters">
           <input
@@ -110,7 +110,7 @@ function InvoiceManager() {
               setEmailFilter(event.target.value);
               setPage(0);
             }}
-            placeholder="Search by email"
+            placeholder="Szukaj po emailu"
             className="invoice-manager-input"
           />
 
@@ -119,9 +119,9 @@ function InvoiceManager() {
             onChange={handleIssuedFilterChange}
             className="invoice-manager-select"
           >
-            <option value="ALL">All requests</option>
-            <option value="ISSUED">Issued</option>
-            <option value="NOT_ISSUED">Not issued</option>
+            <option value="ALL">Wszystkie wnioski</option>
+            <option value="ISSUED">Wystawione</option>
+            <option value="NOT_ISSUED">Niewystawione</option>
           </select>
 
           <button
@@ -129,13 +129,13 @@ function InvoiceManager() {
             className="invoice-manager-clear-button"
             onClick={handleClearFilters}
           >
-            Clear
+            Wyczyść
           </button>
         </div>
 
         {loading && (
           <p className="invoice-manager-loading">
-            Loading invoice requests...
+            Wczytywanie wniosków o fakturę...
           </p>
         )}
 
@@ -145,7 +145,7 @@ function InvoiceManager() {
 
         {!loading && !error && invoices.length === 0 && (
           <p className="invoice-manager-empty">
-            No invoice requests found.
+            Nie znaleziono wniosków o fakturę.
           </p>
         )}
 
@@ -159,7 +159,7 @@ function InvoiceManager() {
                 <div className="invoice-manager-main-info">
                   <div className="invoice-manager-heading">
                   <p className="buyers-name-wrap">
-                    <strong>name:</strong> <h2>{invoice.buyerName}</h2>
+                    <strong>nazwa:</strong> <h2>{invoice.buyerName}</h2>
                   </p>
 
                   <span
@@ -169,7 +169,7 @@ function InvoiceManager() {
                         : "invoice-manager-status invoice-manager-status-pending"
                     }
                   >
-                    {invoice.status === "ISSUED" ? "Issued" : "Not issued"}
+                    {invoice.status === "ISSUED" ? "Wystawiona" : "Niewystawiona"}
                   </span>
                   </div>
 
@@ -184,7 +184,7 @@ function InvoiceManager() {
                   )}
 
                   <p>
-                    <strong>Address:</strong>{" "}
+                    <strong>Adres:</strong>{" "}
                     {invoice.street}, {invoice.postalCode}{" "}
                     {invoice.city}, {invoice.country}
                   </p>
@@ -196,10 +196,10 @@ function InvoiceManager() {
                     disabled={issuingInvoiceId === invoice.id}
                   >
                     {issuingInvoiceId === invoice.id
-                      ? "Updating..."
+                      ? "Aktualizowanie..."
                       : invoice.status === "ISSUED"
-                        ? "Mark as not issued"
-                        : "Mark as issued"}
+                        ? "Oznacz jako niewystawioną"
+                        : "Oznacz jako wystawioną"}
                 </button>
               </li>
             ))}
@@ -214,11 +214,11 @@ function InvoiceManager() {
               onClick={() => setPage((current) => current - 1)}
               className="invoice-manager-pagination-button"
             >
-              Previous
+              Poprzednia
             </button>
 
             <span className="invoice-manager-pagination-info">
-              Page {page + 1} of {totalPages}
+              Strona {page + 1} z {totalPages}
             </span>
 
             <button
@@ -227,7 +227,7 @@ function InvoiceManager() {
               onClick={() => setPage((current) => current + 1)}
               className="invoice-manager-pagination-button"
             >
-              Next
+              Następna
             </button>
           </div>
         )}

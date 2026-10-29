@@ -81,7 +81,7 @@ function Payment() {
         !guestPaymentToken
       ) {
         setError(
-          "Payment data is missing or invalid"
+          "Brak danych płatności lub są one nieprawidłowe"
         );
         setLoading(false);
         return;
@@ -105,7 +105,7 @@ function Payment() {
         setGuestPayment(true);
       } catch {
         setError(
-          "Payment link is invalid or has expired"
+          "Link do płatności jest nieprawidłowy lub wygasł"
         );
       } finally {
         setLoading(false);
@@ -125,8 +125,8 @@ function Payment() {
     return (
       <main className="payment-page">
         <div className="payment-card">
-          <h1>Preparing payment</h1>
-          <p>Please wait...</p>
+          <h1>Przygotowywanie płatności</h1>
+          <p>Proszę czekać...</p>
         </div>
       </main>
     );
@@ -140,18 +140,18 @@ function Payment() {
     return (
       <main className="payment-page">
         <div className="payment-card">
-          <h1>Payment unavailable</h1>
+          <h1>Płatność niedostępna</h1>
 
           <p>
             {error ||
-              "Payment data is missing. Start the reservation again."}
+              "Brak danych płatności. Rozpocznij rezerwację ponownie."}
           </p>
 
           <button
             type="button"
             onClick={() => navigate(-1)}
           >
-            Go back
+            Wróć
           </button>
         </div>
       </main>
@@ -161,14 +161,15 @@ function Payment() {
   return (
     <main className="payment-page">
       <div className="payment-card">
-        <h1>Complete payment</h1>
+        <h1>Dokończ płatność</h1>
 
-        <p>Reservation #{reservationId}</p>
+        <p>Rezerwacja #{reservationId}</p>
 
         <Elements
           stripe={stripePromise}
           options={{
             clientSecret,
+            locale: "pl",
             appearance: {
               theme: "stripe",
             },

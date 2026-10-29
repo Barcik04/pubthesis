@@ -106,13 +106,13 @@ function UpdateListing() {
   ];
 
   const DAY_LABELS: Record<string, string> = {
-    MONDAY: "Monday",
-    TUESDAY: "Tuesday",
-    WEDNESDAY: "Wednesday",
-    THURSDAY: "Thursday",
-    FRIDAY: "Friday",
-    SATURDAY: "Saturday",
-    SUNDAY: "Sunday",
+    MONDAY: "Poniedziałek",
+    TUESDAY: "Wtorek",
+    WEDNESDAY: "Środa",
+    THURSDAY: "Czwartek",
+    FRIDAY: "Piątek",
+    SATURDAY: "Sobota",
+    SUNDAY: "Niedziela",
   };
 
   const [offerAvailabilities, setOfferAvailabilities] = useState<
@@ -168,7 +168,7 @@ function UpdateListing() {
       await deleteProductOffer(offerId);
       setOffers(offers.filter((offer) => offer.id !== offerId));
     } catch (err) {
-      setError("Failed to delete offer");
+      setError("Nie udało się usunąć oferty");
     }
   }
 
@@ -219,12 +219,12 @@ async function handleAddOfferToLocalList() {
       offerPrice.trim().length === 0 ||
       offerDurationMinutes.trim().length === 0
     ) {
-      setError("Fill all offer fields");
+      setError("Wypełnij wszystkie pola oferty");
       return;
     }
 
     if (offerAvailabilities.length === 0) {
-      setError("Choose at least one available day");
+      setError("Wybierz co najmniej jeden dostępny dzień");
       return;
     }
 
@@ -233,12 +233,12 @@ async function handleAddOfferToLocalList() {
         availability.startTime.trim().length === 0 ||
         availability.endTime.trim().length === 0
       ) {
-        setError("Fill start and end time for every selected day");
+        setError("Podaj godzinę rozpoczęcia i zakończenia dla każdego wybranego dnia");
         return;
       }
 
       if (availability.endTime <= availability.startTime) {
-        setError("End time must be after start time");
+        setError("Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia");
         return;
       }
     }
@@ -269,7 +269,7 @@ async function handleAddOfferToLocalList() {
           )
         );
       } catch (err) {
-        setError("Failed to update offer");
+        setError("Nie udało się zaktualizować oferty");
         return;
       }
     } else {
@@ -302,7 +302,7 @@ async function handleAddOfferToLocalList() {
     event.preventDefault();
 
     if (!productId) {
-      setError("Missing product id");
+      setError("Brak identyfikatora ogłoszenia");
       return;
     }
 
@@ -354,7 +354,7 @@ async function handleAddOfferToLocalList() {
       navigate("/user");
 
     } catch (err) {
-      setError("Failed to update listing");
+      setError("Nie udało się zaktualizować ogłoszenia");
     }
   }
 
@@ -362,8 +362,8 @@ async function handleAddOfferToLocalList() {
     return (
       <main className="page">
         <section className="create-card">
-          <h1>Listing data not found</h1>
-          <p>Go back to your profile and choose listing again.</p>
+          <h1>Nie znaleziono danych ogłoszenia</h1>
+          <p>Wróć do profilu i wybierz ogłoszenie ponownie.</p>
         </section>
       </main>
     );
@@ -371,19 +371,19 @@ async function handleAddOfferToLocalList() {
 
   return (
     <main className="page">
-      <h1>Update Listing</h1>
+      <h1>Edytuj ogłoszenie</h1>
 
       <section className="create-card">
         <div className="create-header">
-          <p>Edit your product or service offer.</p>
+          <p>Edytuj swoje ogłoszenie.</p>
         </div>
 
         <form className="create-form" onSubmit={handleSubmit}>
           <label>
-            Product name
+            Nazwa ogłoszenia
             <input
               type="text"
-              placeholder="e.g. Website design"
+              placeholder="np. Pub Pod Kogutem"
               value={name}
               onChange={(event) => setName(event.target.value)}
               required
@@ -391,9 +391,9 @@ async function handleAddOfferToLocalList() {
           </label>
 
           <label>
-            Description
+            Opis
             <textarea
-              placeholder="Describe your product or service..."
+              placeholder="Opisz swój lokal lub usługę..."
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               required
@@ -402,10 +402,10 @@ async function handleAddOfferToLocalList() {
 
           <div className="form-row">
             <label>
-              Street
+              Ulica
               <input
                 type="text"
-                placeholder="e.g. Kościuszki"
+                placeholder="np. Kościuszki"
                 value={street}
                 onChange={(event) => setStreet(event.target.value)}
                 required
@@ -413,10 +413,10 @@ async function handleAddOfferToLocalList() {
             </label>
 
             <label>
-              House number
+              Numer budynku
               <input
                 type="text"
-                placeholder="e.g. 15A"
+                placeholder="np. 15A"
                 value={houseNumber}
                 onChange={(event) => setHouseNumber(event.target.value)}
                 required
@@ -426,10 +426,10 @@ async function handleAddOfferToLocalList() {
 
           <div className="form-row">
             <label>
-              City
+              Miasto
               <input
                 type="text"
-                placeholder="e.g. Olsztyn"
+                placeholder="np. Olsztyn"
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
                 required
@@ -437,10 +437,10 @@ async function handleAddOfferToLocalList() {
             </label>
 
             <label>
-              Postal code
+              Kod pocztowy
               <input
                 type="text"
-                placeholder="e.g. 10-001"
+                placeholder="np. 10-001"
                 value={postalCode}
                 onChange={(event) => setPostalCode(event.target.value)}
                 required
@@ -449,10 +449,10 @@ async function handleAddOfferToLocalList() {
           </div>
 
           <label>
-            Country
+            Kraj
             <input
               type="text"
-              placeholder="e.g. Poland"
+              placeholder="np. Polska"
               value={country}
               onChange={(event) => setCountry(event.target.value)}
               required
@@ -461,10 +461,10 @@ async function handleAddOfferToLocalList() {
 
           <div className="form-row">
             <label>
-              Price from
+              Cena od
               <input
                 type="number"
-                placeholder="e.g. 199"
+                placeholder="np. 199"
                 min="0"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
@@ -473,10 +473,10 @@ async function handleAddOfferToLocalList() {
             </label>
 
             <label>
-              Type
+              Kategoria
               <input
                 type="text"
-                placeholder="e.g. IT, Design, Repair"
+                placeholder="np. Pub, Bar, Restauracja"
                 value={types}
                 onChange={(event) => setTypes(event.target.value)}
                 required
@@ -486,19 +486,19 @@ async function handleAddOfferToLocalList() {
 
           <div className="offers-section">
             <div className="offers-wrapper">
-              <h2>Offers</h2>
+              <h2>Oferty</h2>
 
               <button
                 type="button"
                 className="add-btn"
                 onClick={handleOpenOfferPopup}
               >
-                <img src={plus} alt="add-plus-btn" />
+                <img src={plus} alt="Dodaj ofertę" />
               </button>
             </div>
 
             {offers.length === 0 && newOffers.length === 0 ? (
-              <p>No offers yet</p>
+              <p>Brak ofert</p>
             ) : (
             <ul className="offers-list">
               {offers.map((offer) => {
@@ -512,14 +512,14 @@ async function handleAddOfferToLocalList() {
                         <h3>{offer.name}</h3>
                         <p>{offer.description}</p>
                         <p>{offer.price} PLN</p>
-                        <p>{offer.duration ?? offer.durationMinutes} minutes</p>
+                        <p>{offer.duration ?? offer.durationMinutes} min</p>
                         <p className="cash-availability-show">
-                          <span>Cash payment:</span>
+                          <span>Płatność gotówką:</span>
 
                           <strong>
                             {offer.cashPaymentAvailability
-                              ? "Available"
-                              : "Unavailable"}
+                              ? "Dostępna"
+                              : "Niedostępna"}
                           </strong>
                         </p>
                       </div>
@@ -530,7 +530,7 @@ async function handleAddOfferToLocalList() {
                           className="edit-offer-button-create-listing"
                           onClick={() => handleOpenEditOfferPopup(offer)}
                         >
-                          <img src={edit} alt="edit offer" />
+                          <img src={edit} alt="Edytuj ofertę" />
                         </button>
 
                         <button
@@ -538,7 +538,7 @@ async function handleAddOfferToLocalList() {
                           className="delete-offer-button-create-listing"
                           onClick={() => handleDeleteOffer(offer.id)}
                         >
-                          <img src={bin} alt="delete offer" />
+                          <img src={bin} alt="Usuń ofertę" />
                         </button>
                       </div>
                     </div>
@@ -548,16 +548,16 @@ async function handleAddOfferToLocalList() {
                       className="offer-expand-btn"
                       onClick={() => setExpandedOfferKey(isExpanded ? null : offerKey)}
                     >
-                      {isExpanded ? "▲ Hide availability" : "▼ Show availability"}
+                      {isExpanded ? "▲ Ukryj dostępność" : "▼ Pokaż dostępność"}
                     </button>
 
                     {isExpanded && (
                       <div className="offer-availabilities">
                         {offer.availabilities.length === 0 ? (
-                          <p>No availability ranges</p>
+                          <p>Brak przedziałów dostępności</p>
                         ) : (
                           <>
-                            <p>Available time ranges:</p>
+                            <p>Dostępne przedziały czasowe:</p>
 
                             {offer.availabilities.map((availability) => (
                               <p key={availability.id}>
@@ -584,14 +584,14 @@ async function handleAddOfferToLocalList() {
                       <h3>{offer.name}</h3>
                       <p>{offer.description}</p>
                       <p>{offer.price} PLN</p>
-                      <p>{offer.durationMinutes} minutes</p>
+                      <p>{offer.durationMinutes} min</p>
                       <p className="cash-availability-show">
-                        <span>Cash payment:</span>
+                        <span>Płatność gotówką:</span>
 
                         <strong>
                           {offer.cashPaymentAvailability
-                            ? "Available"
-                            : "Unavailable"}
+                            ? "Dostępna"
+                            : "Niedostępna"}
                         </strong>
                       </p>
                     </div>
@@ -601,12 +601,12 @@ async function handleAddOfferToLocalList() {
                       className="offer-expand-btn"
                       onClick={() => setExpandedOfferKey(isExpanded ? null : offerKey)}
                     >
-                      {isExpanded ? "▲ Hide availability" : "▼ Show availability"}
+                      {isExpanded ? "▲ Ukryj dostępność" : "▼ Pokaż dostępność"}
                     </button>
 
                     {isExpanded && (
                       <div className="offer-availabilities">
-                        <p>Available time ranges:</p>
+                        <p>Dostępne przedziały czasowe:</p>
 
                         {offer.availabilities.map((availability) => (
                           <p key={availability.dayOfWeek}>
@@ -625,7 +625,7 @@ async function handleAddOfferToLocalList() {
 
           {product.imageUrl && (
             <div>
-              <p>Current image:</p>
+              <p>Aktualne zdjęcie:</p>
               <img
                 src={`http://localhost:8080${product.imageUrl}`}
                 alt={product.name}
@@ -641,7 +641,7 @@ async function handleAddOfferToLocalList() {
           )}
 
           <label>
-            New image
+            Nowe zdjęcie
             <div className="image-row">
               <input
                 type="file"
@@ -658,7 +658,7 @@ async function handleAddOfferToLocalList() {
           {error && <p className="error">{error}</p>}
 
           <button className="submit-btn" type="submit">
-            Update listing
+            Zapisz zmiany
           </button>
         </form>
       </section>
@@ -669,44 +669,44 @@ async function handleAddOfferToLocalList() {
             className="offer-popup"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2>{editingOfferId === null ? "Add offer" : "Edit offer"}</h2>
+            <h2>{editingOfferId === null ? "Dodaj ofertę" : "Edytuj ofertę"}</h2>
 
             <label>
-              Offer name
+              Nazwa oferty
               <input
                 type="text"
-                placeholder="e.g. Basic package"
+                placeholder="np. Rezerwacja stolika"
                 value={offerName}
                 onChange={(event) => setOfferName(event.target.value)}
               />
             </label>
 
             <label>
-              Offer description
+              Opis oferty
               <textarea
-                placeholder="Describe this offer..."
+                placeholder="Opisz tę ofertę..."
                 value={offerDescription}
                 onChange={(event) => setOfferDescription(event.target.value)}
               />
             </label>
 
             <label>
-              Offer price
+              Cena oferty
               <input
                 type="number"
                 min="0"
-                placeholder="e.g. 99"
+                placeholder="np. 99"
                 value={offerPrice}
                 onChange={(event) => setOfferPrice(event.target.value)}
               />
             </label>
 
             <label>
-              Duration minutes
+              Czas trwania (min)
               <input
                 type="number"
                 min="1"
-                placeholder="e.g. 60"
+                placeholder="np. 60"
                 value={offerDurationMinutes}
                 onChange={(event) =>
                   setOfferDurationMinutes(event.target.value)
@@ -724,11 +724,11 @@ async function handleAddOfferToLocalList() {
                 }
               />
 
-              <span>Allow cash payment</span>
+              <span>Zezwól na płatność gotówką</span>
             </label>
 
             <div>
-              <p className="available-days">Available days</p>
+              <p className="available-days">Dostępne dni</p>
 
               {DAYS_OF_WEEK.map((day) => {
                 const availability = offerAvailabilities.find(
@@ -750,7 +750,7 @@ async function handleAddOfferToLocalList() {
                     {availability && (
                       <div className="form-row">
                         <label>
-                          Start time
+                          Godzina rozpoczęcia
                           <input
                             type="time"
                             value={availability.startTime}
@@ -765,7 +765,7 @@ async function handleAddOfferToLocalList() {
                         </label>
 
                         <label>
-                          End time
+                          Godzina zakończenia
                           <input
                             type="time"
                             value={availability.endTime}
@@ -790,7 +790,7 @@ async function handleAddOfferToLocalList() {
               className="submit-btn"
               onClick={handleAddOfferToLocalList}
             >
-              {editingOfferId === null ? "Add offer" : "Save changes"}
+              {editingOfferId === null ? "Dodaj ofertę" : "Zapisz zmiany"}
             </button>
           </div>
         </div>

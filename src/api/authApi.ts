@@ -30,7 +30,7 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   });
 
   if (!response.ok) {
-    throw new Error("Invalid email or password");
+    throw new Error("Nieprawidłowy email lub hasło");
   }
 
   const result: LoginResponse = await response.json();
@@ -53,7 +53,7 @@ export async function register(data: RegisterRequest): Promise<void> {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Registration failed");
+    throw new Error(error.message || "Rejestracja nie powiodła się");
   }
 }
 

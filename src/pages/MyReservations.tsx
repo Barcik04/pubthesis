@@ -34,7 +34,7 @@ function MyReservations() {
         const data = await getMyReservations();
         setReservations(data);
       } catch {
-        setError("Failed to load reservations");
+        setError("Nie udało się wczytać rezerwacji");
       } finally {
         setLoading(false);
       }
@@ -88,7 +88,7 @@ function MyReservations() {
         },
       });
     } catch {
-      setError("Failed to start payment");
+      setError("Nie udało się rozpocząć płatności");
     } finally {
       setPaymentLoadingId(null);
     }
@@ -96,7 +96,7 @@ function MyReservations() {
 
   async function handleCancelReservation(reservationId: number) {
     const confirmed = window.confirm(
-      "Are you sure you want to cancel this reservation?"
+      "Czy na pewno chcesz anulować tę rezerwację?"
     );
 
     if (!confirmed) {
@@ -114,13 +114,13 @@ function MyReservations() {
         )
       );
     } catch {
-      setError("Failed to cancel reservation");
+      setError("Nie udało się anulować rezerwacji");
     }
   }
 
   return (
     <main className="my-reservations-page">
-      <h1 className="my-reservations-title">My Reservations</h1>
+      <h1 className="my-reservations-title">Moje rezerwacje</h1>
 
       <section className="my-reservations-card">
         <div className="reservation-filters">
@@ -129,7 +129,7 @@ function MyReservations() {
             className={selectedFilter === "ALL" ? "active" : ""}
             onClick={() => setSelectedFilter("ALL")}
           >
-            All
+            Wszystkie
           </button>
 
           <button
@@ -137,7 +137,7 @@ function MyReservations() {
             className={selectedFilter === "UPCOMING" ? "active" : ""}
             onClick={() => setSelectedFilter("UPCOMING")}
           >
-            Upcoming
+            Nadchodzące
           </button>
 
           <button
@@ -145,7 +145,7 @@ function MyReservations() {
             className={selectedFilter === "COMPLETED" ? "active" : ""}
             onClick={() => setSelectedFilter("COMPLETED")}
           >
-            Completed
+            Zakończone
           </button>
 
           <button
@@ -153,19 +153,19 @@ function MyReservations() {
             className={selectedFilter === "PAID" ? "active" : ""}
             onClick={() => setSelectedFilter("PAID")}
           >
-            Paid
+            Opłacone
           </button>
         </div>
 
         {error && <p className="error">{error}</p>}
 
         {loading && (
-          <p className="loading">Loading reservations...</p>
+          <p className="loading">Wczytywanie rezerwacji...</p>
         )}
 
         {!loading && filteredReservations.length === 0 && (
           <p className="empty-reservations">
-            No reservations found.
+            Nie znaleziono rezerwacji.
           </p>
         )}
 
@@ -177,15 +177,15 @@ function MyReservations() {
                 className="reservation-item"
               >
                 <div className="reservation-info">
-                  <h2>Reservation #{reservation.id}</h2>
+                  <h2>Rezerwacja #{reservation.id}</h2>
 
                   <p>
-                    <span>Start:</span>
+                    <span>Początek:</span>
                     {formatDate(reservation.startTime)}
                   </p>
 
                   <p>
-                    <span>End:</span>
+                    <span>Koniec:</span>
                     {formatDate(reservation.endTime)}
                   </p>
 
@@ -202,15 +202,15 @@ function MyReservations() {
                       }
                     >
                       {reservation.status === "CONFIRMED"
-                        ? "Confirmed"
+                        ? "Potwierdzona"
                         : reservation.status === "PENDING_PAYMENT"
-                          ? "Pending payment"
-                          : "Cancelled"}
+                          ? "Oczekuje na płatność"
+                          : "Anulowana"}
                     </strong>
                   </p>
 
                   <p>
-                    <span>Payment method:</span>
+                    <span>Metoda płatności:</span>
 
                     <strong
                       className={
@@ -220,8 +220,8 @@ function MyReservations() {
                       }
                     >
                       {reservation.paymentMethod === "CASH"
-                        ? "Cash"
-                        : "Card online"}
+                        ? "Gotówka"
+                        : "Karta online"}
                     </strong>
                   </p>
                 </div>
@@ -231,7 +231,7 @@ function MyReservations() {
                     to={`/listing-page/${reservation.productId}`}
                     className="reservation-details-button"
                   >
-                    View product
+                    Zobacz ogłoszenie
                   </Link>
 
                   {reservation.status === "PENDING_PAYMENT" &&
@@ -243,8 +243,8 @@ function MyReservations() {
                         disabled={paymentLoadingId === reservation.id}
                       >
                         {paymentLoadingId === reservation.id
-                          ? "Loading..."
-                          : "Pay now"}
+                          ? "Wczytywanie..."
+                          : "Zapłać teraz"}
                       </button>
                     )}
 
@@ -257,7 +257,7 @@ function MyReservations() {
                           handleCancelReservation(reservation.id)
                         }
                       >
-                        Cancel
+                        Anuluj
                       </button>
                     )}
                 </div>
@@ -268,7 +268,7 @@ function MyReservations() {
       </section>
 
       <Link to="/user" className="back-to-profile-button">
-        Back to profile
+        Wróć do profilu
       </Link>
     </main>
   );

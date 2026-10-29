@@ -44,7 +44,7 @@ function CardPaymentForm({
 
       if (result.error) {
         setError(
-          result.error.message ?? "Payment could not be completed"
+          result.error.message ?? "Nie udało się zrealizować płatności"
         );
         return;
       }
@@ -68,7 +68,7 @@ function CardPaymentForm({
         className="online-payment-button"
         disabled={!stripe || !elements || loading}
       >
-        {loading ? "Processing..." : "Pay now"}
+        {loading ? "Przetwarzanie..." : "Zapłać teraz"}
       </button>
 
       <button
@@ -77,16 +77,16 @@ function CardPaymentForm({
         onClick={onCancel}
         disabled={loading}
       >
-        Cancel
+        Anuluj
       </button>
         {!isAuthenticated && (
           <div className="cash-login-section">
             <p className="guest-reservation-divider">
-              Want to pay with cash?
+              Chcesz zapłacić gotówką?
             </p>
 
             <p className="cash-login-description">
-              Sign in or create an account to choose cash payment.
+              Zaloguj się lub załóż konto, aby wybrać płatność gotówką.
             </p>
 
             <div className="cash-login-actions">
@@ -94,14 +94,14 @@ function CardPaymentForm({
                 to="/signin"
                 className="guest-reservation-secondary-button"
               >
-                Sign in
+                Zaloguj się
               </Link>
 
               <Link
                 to="/signup"
                 className="guest-reservation-secondary-button"
               >
-                Register
+                Zarejestruj się
               </Link>
             </div>
           </div>

@@ -27,7 +27,7 @@ function RegisterPage() {
         lastName: lastName,
       });
 
-      setMessage("Account created. You can now sign in.");
+      setMessage("Konto zostało utworzone. Możesz się teraz zalogować.");
       setEmail("");
       setPassword("");
       setFirstName("");
@@ -36,7 +36,7 @@ function RegisterPage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Registration failed");
+        setError("Rejestracja nie powiodła się");
       }
     }
   }
@@ -44,12 +44,12 @@ function RegisterPage() {
   return (
     <main className="auth-page">
       <section className="auth-card">
-        <h1>Create account</h1>
-        <p>Register a new account.</p>
+        <h1>Załóż konto</h1>
+        <p>Zarejestruj nowe konto.</p>
 
         <form onSubmit={handleSubmit}>
           <label>
-            First name
+            Imię
             <input
               type="text"
               value={firstName}
@@ -59,7 +59,7 @@ function RegisterPage() {
           </label>
 
           <label>
-            Last name
+            Nazwisko
             <input
               type="text"
               value={lastName}
@@ -79,7 +79,7 @@ function RegisterPage() {
           </label>
 
           <label>
-            Password
+            Hasło
             <input
               type="password"
               value={password}
@@ -89,14 +89,14 @@ function RegisterPage() {
             />
           </label>
 
-          <button type="submit">Create account</button>
+          <button type="submit">Załóż konto</button>
         </form>
 
         {error && <p className="error">{error}</p>}
         {message && <p className="success">{message}</p>}
 
         <p>
-          Already have an account? <Link to="/signin">Sign in</Link>
+          Masz już konto? <Link to="/signin">Zaloguj się</Link>
         </p>
       </section>
     </main>

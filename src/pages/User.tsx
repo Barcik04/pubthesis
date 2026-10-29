@@ -48,7 +48,7 @@ function User() {
       const data = await getProductTypes();
       setAvailableTypes(data);
     } catch (err) {
-      setError("Failed to load product types");
+      setError("Nie udało się wczytać kategorii");
     }
   }
 
@@ -75,7 +75,7 @@ function User() {
         setProducts(data.content);
         setTotalPages(data.totalPages);
         } catch (err) {
-        setError("Failed to load products");
+        setError("Nie udało się wczytać ogłoszeń");
         } finally {
         setLoading(false);
         }
@@ -110,7 +110,7 @@ function User() {
     }
 
     async function handleDeleteProduct(productId: number) {
-        const confirmed = window.confirm("Are you sure you want to delete this listing?");
+        const confirmed = window.confirm("Czy na pewno chcesz usunąć to ogłoszenie?");
 
         if (!confirmed) {
             return;
@@ -125,23 +125,23 @@ function User() {
             currentProducts.filter((product) => product.id !== productId)
             );
         } catch (err) {
-            setError("Failed to delete product");
+            setError("Nie udało się usunąć ogłoszenia");
         }
     }
 
   return (
     <main className="user-page">
-        <h1 className="profile-title-user">Your Profile</h1>
+        <h1 className="profile-title-user">Twój profil</h1>
         
         <section className="products-card-user">
             {error && <p className="error">{error}</p>}
 
-            {loading && <p className="loading">Loading products...</p>}
+            {loading && <p className="loading">Wczytywanie ogłoszeń...</p>}
             <div className="filters-wrap-user">
                 <div className="search-form-user">
                     <input
                         type="text"
-                        placeholder="Search your listings..."
+                        placeholder="Szukaj w swoich ogłoszeniach..."
                         value={searchName}
                         onChange={(event) => {
                         setPage(0);
@@ -157,7 +157,7 @@ function User() {
                             onClick={() => setIsTypesOpen((current) => !current)}
                         >
                             <span>
-                            Categories
+                            Kategorie
                             {selectedTypes.length > 0 && ` (${selectedTypes.length})`}
                             </span>
 
@@ -229,7 +229,7 @@ function User() {
                 </div>
             </div>
         
-            <h2>Your listings</h2>
+            <h2>Twoje ogłoszenia</h2>
             <div className="profile-content-user">
                     {!loading && (
                     <ul className="products-list-user">
@@ -253,14 +253,14 @@ function User() {
                             to={`/listing-page/${product.id}`}
                             className="details-button-user"
                         >
-                            View details
+                            Zobacz szczegóły
                         </Link>
 
                         <Link
                             to={`/manage-reservations/${product.id}`}
                             className="details-button-user"
                         >
-                            Manage reservations
+                            Zarządzaj rezerwacjami
                         </Link>
                         </div>
                         <div className="buttons-wrap-user">
@@ -270,7 +270,7 @@ function User() {
                                 className="edit-listing-button-user"
                             >
                                 <img
-                                    src={edit} alt="Application logo" 
+                                    src={edit} alt="Edytuj" 
                                     className="edit-image-user"
                                 />
                             </Link>
@@ -283,7 +283,7 @@ function User() {
                                 onClick={() => handleDeleteProduct(product.id)}
                             >
                                 <img
-                                    src={bin} alt="Application logo" 
+                                    src={bin} alt="Usuń" 
                                     className="edit-image-user"
                                 />
                             </button>
@@ -295,20 +295,20 @@ function User() {
 
                 <aside className="right-list-user">
                     <Link to="/create-listing" className="create-listing-button-user">
-                        Create listing
+                        Dodaj ogłoszenie
                     </Link>
                     <Link to="/my-reservations" className="create-listing-button-user">
-                        My Reservations
+                        Moje rezerwacje
                     </Link>
                     <Link to="/invoice-manager" className="create-listing-button-user">
-                        Invoices Manager
+                        Menedżer faktur
                     </Link>
                      <button
                         type="button"
                         onClick={handleLogout}
                         className="logout-btn"
                     >
-                        Log out
+                        Wyloguj się
                     </button>
                 </aside>
                 
@@ -327,7 +327,7 @@ function User() {
         </button>
 
         <span className="pagination-info-user">
-            Page {page + 1} of {Math.max(totalPages, 1)}
+            Strona {page + 1} z {Math.max(totalPages, 1)}
         </span>
 
         <button

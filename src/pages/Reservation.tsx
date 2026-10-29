@@ -454,13 +454,13 @@ function Reservation() {
         </div>
 
         <div className="weekdays">
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span>Thu</span>
-          <span>Fri</span>
-          <span>Sat</span>
-          <span>Sun</span>
+          <span>Pon</span>
+          <span>Wt</span>
+          <span>Śr</span>
+          <span>Czw</span>
+          <span>Pt</span>
+          <span>Sob</span>
+          <span>Nd</span>
         </div>
 
         <div className="days">
@@ -545,14 +545,14 @@ function Reservation() {
                           }
                         >
                           {wantInvoice
-                            ? "Cancel"
-                            : "Need an Invoice"}
+                            ? "Anuluj"
+                            : "Potrzebuję faktury"}
                         </button>
 
                         {wantInvoice && (
                           <div className="invoice-form">
                             <input
-                              placeholder="Buyer's name"
+                              placeholder="Nazwa nabywcy"
                               value={
                                 invoiceData.buyerName
                               }
@@ -578,7 +578,7 @@ function Reservation() {
                             />
 
                             <input
-                              placeholder="Street and street number"
+                              placeholder="Ulica i numer"
                               value={
                                 invoiceData.street
                               }
@@ -591,7 +591,7 @@ function Reservation() {
                             />
 
                             <input
-                              placeholder="Postal code"
+                              placeholder="Kod pocztowy"
                               value={
                                 invoiceData.postalCode
                               }
@@ -604,7 +604,7 @@ function Reservation() {
                             />
 
                             <input
-                              placeholder="City"
+                              placeholder="Miasto"
                               value={invoiceData.city}
                               onChange={(event) =>
                                 updateInvoiceField(
@@ -615,7 +615,7 @@ function Reservation() {
                             />
 
                             <input
-                              placeholder="Country"
+                              placeholder="Kraj"
                               value={
                                 invoiceData.country
                               }
@@ -652,15 +652,15 @@ function Reservation() {
                           disabled={paymentLoading}
                         >
                           {paymentLoading
-                            ? "Loading..."
-                            : "Confirm reservation"}
+                            ? "Wczytywanie..."
+                            : "Potwierdź rezerwację"}
                         </button>
                       </div>
                     )}
                   </div>
                 ))
               ) : (
-                <p>No services available today</p>
+                <p>Brak dostępnych terminów tego dnia</p>
               )}
             </div>
 
@@ -669,7 +669,7 @@ function Reservation() {
               className="close-button"
               onClick={closePopup}
             >
-              Close
+              Zamknij
             </button>
           </div>
         </div>
@@ -689,10 +689,10 @@ function Reservation() {
                 event.stopPropagation()
               }
             >
-              <h2>Choose payment method</h2>
+              <h2>Wybierz metodę płatności</h2>
 
               <p>
-                Reservation for {paymentSlot},{" "}
+                Rezerwacja na {paymentSlot},{" "}
                 {selectedDay}.{month + 1}.{year}
               </p>
 
@@ -703,7 +703,7 @@ function Reservation() {
                   onClick={handleCashPayment}
                   disabled={paymentLoading}
                 >
-                  Pay with cash
+                  Zapłać gotówką
                 </button>
 
                 <button
@@ -717,8 +717,8 @@ function Reservation() {
                   disabled={paymentLoading}
                 >
                   {paymentLoading
-                    ? "Loading..."
-                    : "Pay online"}
+                    ? "Wczytywanie..."
+                    : "Zapłać online"}
                 </button>
               </div>
 
@@ -730,7 +730,7 @@ function Reservation() {
                 }
                 disabled={paymentLoading}
               >
-                Cancel
+                Anuluj
               </button>
             </div>
           </div>

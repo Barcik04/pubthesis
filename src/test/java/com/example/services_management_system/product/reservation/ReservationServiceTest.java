@@ -72,7 +72,7 @@ class ReservationServiceTest {
         Product product = new Product("Barber", "desc", 50.0, provider, null, "PL", "Warsaw", "Main", "00-001", "1", null, null);
         ReflectionTestUtils.setField(product, "id", 10L);
 
-        offer = new ProductOffer("Haircut", "short", 80.0, 60, true);
+        offer = new ProductOffer("Haircut", "short", 80.0, 60, true, false);
         offer.setId(100L);
         product.addOffer(offer);
 

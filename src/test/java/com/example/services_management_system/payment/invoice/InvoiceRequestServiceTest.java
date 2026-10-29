@@ -50,7 +50,7 @@ class InvoiceRequestServiceTest {
         ReflectionTestUtils.setField(provider, "id", 2L);
 
         Product product = new Product("Barber", "desc", 50.0, provider, null, "PL", "Warsaw", "Main", "00-001", "1", null, null);
-        offer = new ProductOffer("Haircut", "short", 80.0, 60, true);
+        offer = new ProductOffer("Haircut", "short", 80.0, 60, true, false);
         product.addOffer(offer);
 
         LocalDateTime start = LocalDateTime.now().plusDays(1);

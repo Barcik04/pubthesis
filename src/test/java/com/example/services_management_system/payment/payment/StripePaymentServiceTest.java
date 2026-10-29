@@ -44,7 +44,7 @@ class StripePaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        ProductOffer offer = new ProductOffer("Haircut", "short", 79.99, 60, false);
+        ProductOffer offer = new ProductOffer("Haircut", "short", 79.99, 60, false, false);
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         reservation = new Reservation(offer, start, start.plusMinutes(60));
         ReflectionTestUtils.setField(reservation, "id", 7L);

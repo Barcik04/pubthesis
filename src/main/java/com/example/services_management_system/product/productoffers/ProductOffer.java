@@ -61,12 +61,13 @@ public class ProductOffer {
     public ProductOffer() {
     }
 
-    public ProductOffer(String name, String description, Double price, Integer durationMinutes, Boolean cashPaymentAvailability) {
+    public ProductOffer(String name, String description, Double price, Integer durationMinutes, Boolean cashPaymentAvailability, Boolean invoiceAvailable) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.durationMinutes = durationMinutes;
         this.cashPaymentAvailability = cashPaymentAvailability;
+        this.invoiceAvailable = invoiceAvailable;
     }
 
 

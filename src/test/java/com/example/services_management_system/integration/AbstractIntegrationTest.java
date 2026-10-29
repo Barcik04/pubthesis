@@ -66,7 +66,7 @@ public abstract class AbstractIntegrationTest {
         Product product = productRepository.save(
                 new Product("Barber", "desc", 50.0, owner, null, "PL", "Warsaw", "Main", "00-001", "1", null, null)
         );
-        ProductOffer offer = new ProductOffer("Haircut", "short", price, durationMinutes, true);
+        ProductOffer offer = new ProductOffer("Haircut", "short", price, durationMinutes, true, false);
         offer.setInvoiceAvailable(invoiceAvailable);
         product.addOffer(offer);
         return productOfferRepository.save(offer);

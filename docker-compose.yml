@@ -45,6 +45,17 @@ services:
       - db
     restart: unless-stopped
 
+  stripe-cli:
+    container_name: services_management_stripe_cli
+    image: stripe/stripe-cli:latest
+    depends_on:
+      - app
+    command: listen --events payment_intent.succeeded --forward-to http://app:8080/payments/webhook
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+    networks:
+      - db
+    restart: unless-stopped
 
 volumes:
   db:

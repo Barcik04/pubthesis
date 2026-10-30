@@ -116,7 +116,8 @@ public class ProductOfferService {
                 offer.getPrice(),
                 offer.getDurationMinutes(),
                 availabilityResultDtos,
-                offer.getCashPaymentAvailability()
+                offer.getCashPaymentAvailability(),
+                offer.getInvoiceAvailable()
         );
     }
 

@@ -39,7 +39,6 @@ public class StripePaymentService {
             Long reservationId,
             Long userId
     ) throws StripeException {
-
         Reservation reservation = reservationRepository
                 .findByIdAndUser_Id(reservationId, userId)
                 .orElseThrow(() ->
@@ -47,6 +46,11 @@ public class StripePaymentService {
                                 "Reservation not found or does not belong to user"
                         )
                 );
+
+        if (reservation.getProductOffer().getPrice() == 0) {
+            reservation.setStatus(ReservationStatus.CONFIRMED);
+            return new PaymentIntentResponse(null, null);
+        }
 
         if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
             throw new IllegalStateException(
@@ -127,6 +131,11 @@ public class StripePaymentService {
                                 "Guest reservation not found or invalid payment token"
                         )
                 );
+
+        if (reservation.getProductOffer().getPrice() == 0) {
+            reservation.setStatus(ReservationStatus.CONFIRMED);
+            return new PaymentIntentResponse(null, null);
+        }
 
         if (
                 reservation.getPaymentExpiresAt() == null ||

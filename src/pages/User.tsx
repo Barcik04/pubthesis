@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getMyProducts, deleteProduct, getProductTypes } from "../api/productsApi";
+import { getMyProducts, deleteProduct, getProductTypes, isAdmin } from "../api/productsApi";
 import { logout } from "../api/authApi";
+import AdminPanelModal from "../components/AdminPanelModal";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +37,7 @@ function User() {
 
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -303,6 +305,15 @@ function User() {
                     <Link to="/invoice-manager" className="create-listing-button-user">
                         Menedżer faktur
                     </Link>
+                    {isAdmin() && (
+                        <button
+                            type="button"
+                            onClick={() => setIsAdminPanelOpen(true)}
+                            className="create-listing-button-user"
+                        >
+                            Panel admina
+                        </button>
+                    )}
                      <button
                         type="button"
                         onClick={handleLogout}
@@ -338,6 +349,10 @@ function User() {
             &gt;
         </button>
         </div>
+
+        {isAdminPanelOpen && (
+            <AdminPanelModal onClose={() => setIsAdminPanelOpen(false)} />
+        )}
     </main>
     );
 }

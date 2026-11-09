@@ -11,6 +11,7 @@ public record ProductOfferResultDto(
         Double price,
         Integer duration,
         Set<ProductOfferAvailabilityResultDto> availabilities,
-        Boolean cashPaymentAvailability
+        Boolean cashPaymentAvailability,
+        boolean invoiceAvailability
 ) {
 }

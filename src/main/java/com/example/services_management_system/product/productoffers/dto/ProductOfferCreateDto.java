@@ -21,6 +21,8 @@ public record ProductOfferCreateDto(
         Integer durationMinutes,
 
         @NotBlank
-        Boolean cashPaymentAvailability
+        Boolean cashPaymentAvailability,
+
+        Boolean invoiceAvailability
 ) {
 }

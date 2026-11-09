@@ -36,7 +36,8 @@ public class ProductOfferImpl implements ProductOfferMapper{
                     offer.getPrice(),
                     offer.getDurationMinutes(),
                     availabilities,
-                    offer.getCashPaymentAvailability()
+                    offer.getCashPaymentAvailability(),
+                    offer.getInvoiceAvailable()
             ));
         }
 
@@ -63,7 +64,8 @@ public class ProductOfferImpl implements ProductOfferMapper{
                 offer.getPrice(),
                 offer.getDurationMinutes(),
                 availabilities,
-                offer.getCashPaymentAvailability()
+                offer.getCashPaymentAvailability(),
+                offer.getInvoiceAvailable()
         );
     }
 }

@@ -82,7 +82,7 @@ public class Reservation {
 
         if (status == ReservationStatus.PENDING_PAYMENT
                 && paymentExpiresAt == null) {
-            paymentExpiresAt = Instant.now().plus(Duration.ofMinutes(25));
+            paymentExpiresAt = Instant.now().plus(Duration.ofMinutes(15));
         }
     }
 

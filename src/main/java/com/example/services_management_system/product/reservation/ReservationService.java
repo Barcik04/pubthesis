@@ -23,10 +23,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -52,7 +54,7 @@ public class ReservationService {
         this.emailService = emailService;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ReservationResultDto addReservation(Long userId, ReservationAndInvoiceCreateDto createDto) {
         if (createDto.reservationCreateDto().startTime().isBefore(LocalDateTime.now())) {
             throw new DateInThePastException("User tries to create reservation for the time in the past");
@@ -125,7 +127,7 @@ public class ReservationService {
     }
 
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ReservationResultGuestDto addReservationGuest(GuestReservationAndInvoiceDto createDto) {
         if (createDto.reservationGuestCreateDto().startTime().isBefore(LocalDateTime.now())) {
             throw new DateInThePastException("User tries to create reservation for the time in the past");

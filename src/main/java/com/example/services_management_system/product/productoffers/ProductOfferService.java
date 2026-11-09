@@ -52,7 +52,8 @@ public class ProductOfferService {
                 createDto.description(),
                 createDto.price(),
                 createDto.durationMinutes(),
-                createDto.cashPaymentAvailability()
+                createDto.cashPaymentAvailability(),
+                createDto.invoiceAvailability()
         );
 
         product.addOffer(productOffer);
@@ -115,7 +116,8 @@ public class ProductOfferService {
                 offer.getPrice(),
                 offer.getDurationMinutes(),
                 availabilityResultDtos,
-                offer.getCashPaymentAvailability()
+                offer.getCashPaymentAvailability(),
+                offer.getInvoiceAvailable()
         );
     }
 

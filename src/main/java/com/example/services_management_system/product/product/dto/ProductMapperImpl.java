@@ -68,7 +68,8 @@ public class ProductMapperImpl implements ProductMapper {
                 offer.getPrice(),
                 offer.getDurationMinutes(),
                 availabilities,
-                offer.getCashPaymentAvailability()
+                offer.getCashPaymentAvailability(),
+                offer.getInvoiceAvailable()
         );
     }
 

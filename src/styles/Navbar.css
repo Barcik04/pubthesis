@@ -106,3 +106,25 @@
     display: block;
   }
 }
+
+.right-navbar {
+  margin-left: auto;
+  margin-right: 40px;
+}
+
+.right-navbar img {
+  width: 28px;
+  height: 28px;
+  display: block;
+  filter: invert(1);
+}
+
+.right-navbar a {
+  display: flex;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.right-navbar a:hover {
+  transform: scale(1.1);
+}

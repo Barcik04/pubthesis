@@ -1,0 +1,1183 @@
+\documentclass[wmii,inf,inz]{uwmthesis}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
+\usepackage{needspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{subcaption}
+
+\title{Aplikacja do zarządzania rezerwacjami}
+\author{Igor Barcikowski}
+\date{2026}
+\etitle{Application for Managing Reservations}
+\wykonanaw{katedrze}
+\ewykonanaw{the Department}
+\podkierunkiem{promotora}
+\epodkierunkiem{supervisor}
+\raggedbottom
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\chapter{Wstęp}
+
+\section{Motywacja}
+Niniejsza aplikacja stara się odpowiedzieć na stale rosnące zapotrzebowanie na serwisy rezerwacyjne on-line. Serwisy te są już nieodłączną cechą naszego życia. Wraz z rozwojem technologii oraz języków programowania stają się one raz za razem coraz bardziej rozbudowane i nowoczesne. Począwszy od lokalnego lokalu fryzjerskiego do multi-miliardowej korporacji np. Booking, praktycznie każda z tych firm posiada własny serwis ułatwiający klientom zarezerwowanie np. usługi, noclegu, miejsc w kinie itd. Aplikacja skupia się na tym, aby usługodawcy nie musieli tworzyć swojej własnej strony internetowej, w celu zareklamowania się i umożliwienia rezerwacji ich usług klientom, lecz po założeniu konta w Aplikacji mogliby stworzyć swoje własne ogłoszenie wraz z opisem, datami dostępności, płatnościami itd. co pochłania wielokrotnie mniej czasu i funduszy niż stworzenie własnego serwisu internetowego.
+
+\section{Cel pracy}
+Aplikacja ma za zadanie umożliwić usługodawcom i usługobiorcom szybki i prosty przegląd i rezerwacje usług. Wiele aplikacji webowych skupiających się na rezerwacjach jest ściśle skoncentrowanych na usługach lub ogłoszeniach z tylko jednej dziedziny (np. noclegi, fryzjerstwo, salon kosmetyczny). Ta aplikacja stara się zapewnić jak największą uniwersalność podczas tworzenia ogłoszeń, zrzeszając szeroką gamę usługobiorców z różnych branż. Takie podejście ułatwi użytkownikom szukanie tego czego potrzebują ograniczając liczbę serwisów internetowych, które muszą znać i opanować.
+
+\section{Zakres Pracy}
+W ramach aplikacji zaimplementowano podejście architektury REST API w frameworku Spring Boot obsługujący logikę biznesową. Aplikacja kliencka w React komunikuje się z API. Do przechowywania danych o użytkownikach, ogłoszeniach i rezerwacjach wykorzystano relacyjną bazę danych PostgreSQL.
+Obsługa płatności została zrealizowana w testowym trybie (Stripe sandbox).
+\vspace{5mm}
+\\
+Aplikacja nie zaimplementowała następujących rzeczy: aplikacji mobilnej, tłumaczenie interfejsu na wiele języków (domyślnym językiem jest polski).
+
+
+\vspace{1cm}
+
+\section{Opis zawartości poszczególnych rozdziałów}
+
+\begin{itemize}
+    \item W rozdziale 1. opisano motywację, cel i zakres pracy.
+    \item W rozdziale 2. przedstawiono przygotowanie teoretyczne (system rezerwacyjny, architektura klient-serwer, bazy danych, frameworki) oraz analizę porównawczą istniejących serwisów.
+    \item W rozdziale 3. opisano projekt systemu: technologie, wymagania, strukturę bazy danych, przypadki użycia i scenariusze.
+    \item W rozdziale 4. przedstawiono implementację i dokumentację techniczną: diagram komponentów, backend oraz diagramy sekwencyjne procesów rezerwacji, płatności i logowania.
+    \item W rozdziale 5. opisano testy jednostkowe i integracyjne wraz z wynikami, proces geokodowania z użyciem Nominatim oraz detale techniczne aplikacji (JpaSpecificationExecutor, zabezpieczenia, kluczowe endpointy).
+    \item W rozdziale 6. zawarto instrukcję uruchomienia aplikacji.
+    \item W rozdziale 7. opisano frontend oraz interfejs użytkownika wraz ze zrzutami ekranu.
+    \item W rozdziale 8. zawarto podsumowanie, wnioski, ograniczenia i kierunki rozwoju.
+\end{itemize}
+
+\chapter{Teoria stanu wiedzy}
+\section{Przygotowanie teoretyczne}
+System rezerwacyjny to narzędzie - najczęściej w formie aplikacji lub platformy online, które umożliwia klientom samodzielne dokonywanie rezerwacji usług, terminów, lub zasobów. Użytkownikom najczęściej jest przedstawiana strona główna na której widnieje szeroka lista usług i praktycznie zawsze widniejąca razem z nią gama filtrów takich jak: wyszukiwanie po nazwie usługi, cena maksymalna/minimalna usługi, termin, lokalizacja. Filtry pomagają dopasować usługę do wymagań klienta. Serwis powinien również mieć obsługę płatności. W świecie który dąży do coraz większej cyfryzacji, płatności online stały się, można powiedzieć obowiązkową częścią każdego serwisu rezerwacyjnego. Nie oznacza to jednak że wszystkie aplikacje odstąpiły od płatności gotówkowych, niektóre serwisy oferują opcjonalną płatność gotówkową jeśli właściciel ogłoszenia woli taką drogę opłaty. Może to otworzyć drogę do większej ilości klientów, którzy wolą płatności gotówkowe.
+Z punktu widzenia posiadacza biznesu, stworzenie własnej strony do obsługi rezerwacji w firmie, lub właśnie opublikowanie ogłoszenia na portalu zajmującego się ogłoszeniami, może dać wiele korzyści. Klienci mogą dokonać rezerwacji o każdej porze dnia. Niewygodna i czasochłonna mogłaby też być sytuacja gdy klienci w celu dokonania rezerwacji musieliby się kontaktować telefonicznie lub pojawić się osobiście w lokalu. Co za tym idzie pojawia się problem płatności, w wyniku braku systemu który pozwalałby na opłacenie wizyty online, usługodawca musiałby się liczyć z tym, że niektórzy klienci mogliby nie przyjść na wizytę, co blokowałoby innych klientów którzy mogliby zarezerwować wizytę w tym czasie. Kolejną korzyścią może być wzrost ilości klientów. Zwiększając ekspozycję swojego lokalu/ogłoszenia, mogłoby to prowadzić do większej ilości klientów którzy dowiedzieliby się o ofercie. Daje to też możliwości wypromowania oferty poprzez płatne reklamy internetowe które często są tańsze i przyciągają większą gamę klientów niż fizyczne billboardy.
+
+
+
+\vspace{5mm}
+\newpage
+Warto omówić z jakimi problemami zmierzają się twórcy takich serwisów. Pierwszą z nich mogą być właśnie płatności, w szczególności jeśli aplikacja skupia się na pozyskaniu klientów z wielu krajów. W takich sytuacjach ilość dróg płatności często jest ograniczona do zaledwie kilku jeśli nie tylko jednej. Najczęściej spotykaną drogą w takich przypadkach jest droga płatności kartą, lub przelewem. Są to metody które większość społeczeństw używa więc problem międzynarodowej integralności jest mniejszy. Sytuacja może być inna jeśli serwis jest kierowany do klientów jednego kraju. Wtedy łatwiej jest twórcom zdecydować jakie metody płatności mają być obsługiwane w serwisie. BLIK, karty płatnicze i przelewy online pozostają najpopularniejszymi metodami płatności internetowych wśród polskich konsumentów \cite{tpay2025platnosci}.
+
+
+
+\vspace{2mm}
+\newline
+Kolejnym problemem dla niektórych serwisów jest stworzenie aplikacji która będzie miała potrzebne funkcjonalności a zarazem nie będzie przesadnio skomplikowana, aby klient był w stanie intuicyjnie wiedzieć jak prosto i szybko znaleźć odpowiednią usługę i dokonać rezerwacji. Trzeba wziąć pod uwagę również różnice w umiejętnościach technicznych potencjalnych użytkowników, co zwiększa potrzebę stworzenia intuicyjnego interfejsu. Rozwiązaniem może być umieszczenie poradników, infolinii lub nowoczesnego czatu AI wytrenowanego w wiedzy o aplikacji. 
+
+
+
+\vspace{2mm}
+\newline
+Trzecim problemem może się okazać fakturowanie. A konkretnie integracja aplikacji z usługodawcą, a od pewnego czasu w Polsce również z systemem KSeF. Obowiązek wystawiania faktur ustrukturyzowanych przez KSeF obejmie od 1 kwietnia 2026 roku pozostałych przedsiębiorców \cite{fakturownia2026ksef}. Wiele serwisów szczególnie tych z międzynarodową gamą usługodawców i klientów np. Booking, rozwiązuje ten problem mówiąc jawnie: "Fakturami zajmuje się bezpośrednio dostawca usług. Serwis Booking.com for Business nie wystawia faktur, ale szczegółowy wykaz kosztów oraz potwierdzenie płatności znajdziesz w potwierdzeniu rezerwacji".\cite{booking2026faktury} Jest to jak na razie standard na rynku. 
+
+
+
+\vspace{5mm}
+\newline
+\newpage
+\section{Architektura aplikacji}
+Najpowszechniejszą architekturą aplikacji webowych jest architektura klient-serwer. Komunikacja między tymi warstwami odbywa się zazwyczaj zgodnie z konwencją REST API \cite{RESTAPI_definicja}. Jest to model w którym system dzieli się na dwie części: klient i serwer. 
+
+
+
+\newline
+\vspace{2mm}
+Warstwa klienta (inaczej frontend) bezpośrednio wchodzi w interakcje z użytkownikiem, prościej mówiąc jest to to co użytkownik widzi czyli inaczej interfejs wraz z danymi. Klient nie jest tylko odpowiedzialny za wyświetlanie interfejsu, lecz również za przechwytywanie akcji użytkownika, gdy ten np. kliknie przycisk "rezerwuj". Następnie często ta akcja jest przekazywana do naszego serwera w typie danych JSON. Klient nie ma bezpośredniego dostępu do logiki biznesowej ani bazy danych, dzięki temu użytkownik, który chciałby dostać się do naszego serwera, lub bazy danych ma zdecydowanie utrudnione zadanie do zrobienia tego prosto z przeglądarki. Każda metoda logiki biznesowej po stronie serwera ma przypisaną unikalną kombinacje metody HTTP i URL. W taki sposób klient wysyła żądanie, aby serwer wykonał odpowiednią akcję.
+
+
+
+\newline
+\vspace{2mm}
+Serwer (inaczej backend) jest odpowiedzialny za przechowywanie danych, logiki biznesowej i otrzymywanie informacji o akcjach użytkownika od klienta. Serwer łączy się bezpośrednio z bazą danych i na podstawie otrzymanych informacji z frontendu - po sprawdzeniu wszystkich wymogów, zabezpieczeń, wykonuje odpowiednią logikę biznesową, często zmieniając stan rzeczy bazy danych, wysyła maile, nadaje dostępność użytkownikowi i wiele innych.
+
+
+
+\newline
+\vspace{2mm}
+Taki podział nie jest przypadkowy, robi się to ze względu na kilka rzeczy. Pierwszym powodem jest bezpieczeństwo danych. W przypadku gdy logika biznesowa naszej aplikacji znajdowała się po stronie klienta, mogłoby się zdarzyć, że poprzez edycję kodu w przeglądarce, użytkownik mógłby zmienić tą logikę, przez co obejść określone zasady. Dzięki oddzieleniu logiki biznesowej od warstwy frontendowej, serwer nie musi wiedzieć, jaki rodzaj klienta wysyła żądanie - może to być przeglądarka, aplikacja mobilna czy inny system. Komunikacja ta odbywa się najczęściej za pośrednictwem protokołu HTTP: klient wysyła zapytanie, a serwer odsyła odpowiedź \cite{HTTP_definicja}. Taki sposób komunikacji sprawia, że ten sam serwer może jednocześnie obsługiwać wiele różnych typów klientów, bez konieczności tworzenia osobnej logiki dla każdego z nich. Kolejnym ważnym aspektem jest skalowalność. Separacja pozwala na zwiększenie przepustowości serwera poprzez np. dodanie instancji, bez duplikowania kolejnego klienta. Jeszcze jednym ważnym atutem jest ułatwienie testowalności. Podczas wykonywania testów jednostkowych, można skupić się jedynie na testowaniu np. logiki biznesowej nie musząc do testu angażować bazy danych ani nie sprawdzania zwracanych statusów HTTP. 
+
+
+\newpage
+\vspace{5mm}
+W systemach spotykamy się z kilkoma typami baz danych takim jak: 
+\begin{itemize}
+    \item Relacyjne (SQL). Dane przedstawione w tabelach, zawierają unikalny identyfikator zwany kluczem głównym. Relacje pomiędzy tabelami definiują klucze obce które są odwołaniem do klucza głównego powiązanej tabeli. To sprawia, że te bazy danych najlepiej sprawdzają się w aplikacjach właśnie z dużą ilością powiązań między tabelami, oraz gdy potrzeba dużej swobody w tworzeniu zapytań do bazy danych.
+    \item Nierelacyjne (NoSQL). Obejmują kilka różnych podejść do przechowywania danych, m.in. bazy dokumentowe, klucz-wartość, kolumnowe czy grafowe. Jednym z nich są bazy dokumentowe, w których dane zapisywane są w postaci dokumentów, najczęściej w formacie JSON. Każdy dokument posiada unikalny identyfikator, ale nie istnieją między nimi tradycyjne powiązania - dane, które w bazie relacyjnej znajdowałyby się w osobnych, powiązanych tabelach, tutaj często muszą zostać zapisane razem, w jednym dokumencie zagnieżdżając dane w konkretnych polach. Sprawdzają się dobrze, gdy struktura bazy danych nie wymaga wielu złożonych powiązań ani zróżnicowanych zapytań, ponieważ dopasowanie struktury dokumentu do każdego nowego rodzaju zapytania może przy dużej ilości danych znacząco zwiększać zajmowaną przestrzeń dyskową.
+\end{itemize}
+
+\vspace{5mm}
+\newline
+Framework - szkielet do budowy aplikacji. Definiuje on strukturę aplikacji oraz ogólny mechanizm jej działania, a także dostarcza zestaw komponentów i bibliotek ogólnego przeznaczenia do wykonywania określonych zadań. Programista tworzy aplikację, rozbudowując i dostosowując poszczególne komponenty do wymagań realizowanego projektu, tworząc w ten sposób gotową aplikację. \cite{DefinicjaFramework} Jest to zbiór funkcjonalności oraz bibliotek która nie tylko przyspiesza i ułatwia programowanie aplikacji, ale również narzuca z góry wzorce.
+
+
+\newline
+\vspace{5mm}
+Poniżej widnieje kilka przykładów najpopularniejszych frameworków frontendowych \cite{listaFrontendFramework}:
+\textbf{React} (JavaScript/TypeScript) Wykorzystywany do budowy dynamicznych interfejsów użytkownika, takich jak panele administracyjne i platformy ogłoszeniowe. Na jego bazie powstał \textbf{Next.js}, rozszerzający możliwości Reacta m.in. o renderowanie po stronie serwera, co poprawia optymalizację pod kątem SEO\footnote{SEO (ang. \textit{Search Engine Optimization}) - zbiór działań mających na celu poprawę widoczności strony internetowej w wynikach wyszukiwania wyszukiwarek internetowych, takich jak Google.} oraz wydajność ładowania strony. Innym powszechnie stosowanym rozwiązaniem jest \textbf{Angular}, framework oparty w całości na TypeScript, rozwijany przez Google, często wybierany w dużych aplikacjach skupionych na długoterminowy rozwój ze względu na narzuconą, spójną strukturę projektu.
+
+\newline
+\vspace{5mm}
+\enlargethispage{2\baselineskip}
+Poniżej widnieje kilka przykładów najpopularniejszych frameworków backendowych 
+\cite{listaBackendFramework}:
+\textbf{Django}, framework napisany w języku Python, dobrze sprawdzający się w aplikacjach z wysokim użyciem bazy danych, dzięki wbudowanemu mechanizmowi ORM\footnote{ORM (ang. \textit{Object-Relational Mapping}) - mechanizm pozwalający na operowanie na danych z bazy za pomocą obiektów i metod danego języka programowania, bez konieczności pisania zapytań SQL bezpośrednio.} oraz panelowi administracyjnemu, który generuje się automatycznie. \textbf{FastAPI}, również w Pythonie, cechuje go wysoka wydajność oraz automatyczne generowanie dokumentacji API w Swagger, co czyni go popularnym wyborem przy budowie nowoczesnych rozwiązań. \textbf{NestJS}, wykorzystujący TypeScript, występuje w nim spójna struktura inspirowana Angularem, co ułatwia organizację kodu w większych projektach backendowych. Z kolei \textbf{Spring Boot}, oparty na języku Java, jest szeroko stosowany w dużych systemach klasy enterprise\footnote{Enterprise - określenie stosowane wobec systemów informatycznych o dużej skali oraz wysokich wymaganiach dotyczących niezawodności i bezpieczeństwa, typowych dla dużych organizacji i przedsiębiorstw.}, m.in. ze względu na dojrzałość ekosystemu oraz zaufanie i stabilność w środowiskach korporacyjnych. \cite{listaBackendFramework}.
+
+
+\newline
+
+
+
+\section{Analiza porównawcza}
+
+W tej części przedstawiono trzy serwisy internetowe, które są inspiracją do tej aplikacji webowej. Są to jedne z liderów na rynku rezerwacji usług, obejmujących między innymi wizyty fryzjerskie, auto detailing, usługi programistyczne.
+
+\subsection*{Krótkie opisy serwisów}
+
+\textbf{Booksy:}
+
+Booksy to największa i najszybciej rozwijająca się platforma do rezerwacji usług beauty. Celem jest łączenie usługodawców z ich klientami oraz dostarczanie im narzędzi, których potrzebują, aby rozwijać swój biznes. Używa ją ponad 44 miliony użytkowników.
+
+\textbf{Strona domowa:}
+
+\url{https://booksy.com/}
+
+\vspace{0.5cm}
+
+\textbf{Fiverr:}
+
+Fiverr jest internetową platformą pośredniczącą w nawiązywaniu współpracy pomiędzy freelancerami a klientami biznesowymi. Umożliwia osobom samozatrudnionym oferowanie swoich usług, natomiast przedsiębiorcom i właścicielom firm — wyszukiwanie wykonawców do realizacji zadań krótko- i długoterminowych. Firma zanotowała 3,1 miliona kupujących w 2025 roku.
+
+\textbf{Strona domowa:}
+
+\url{https://www.fiverr.com/}
+
+\vspace{0.5cm}
+
+\textbf{Vagaro:}
+
+Internetowy kalendarz rezerwacji oferowany przez Vagaro umożliwia klientom przeglądanie dostępnych terminów oraz wybór najbardziej dogodnego czasu wizyty w salonach kosmetycznych, spa i obiektach fitness. Platforma jest skierowana bardziej na ściśle spersonalizowane systemy dla firm, choć są również dostępne domyślne konfiguracje jeśli firma nie potrzebuje własnej strony z niedomyślnymi funkcjonalnościami. Z platformy korzysta ponad 90 000 firm. 
+
+\textbf{Strona domowa:}
+
+\url{https://www.vagaro.com/}
+\vspace{15mm}
+\newpage
+\subsection*{Cechy wspólne (podobieństwa)}
+
+\begin{itemize}
+    \item Wszystkie analizowane aplikacje działają w podobny sposób. Użytkownik wchodząc na stronę główną, widzi listę kategorii oraz ma możliwość wpisania konkretnej usługi, której szuka. Następnie otrzymuje listę ofert mieszczących się w wybranej kategorii lub odpowiadających podanym kryteriom wyszukiwania.
+
+    \item We wszystkich przypadkach użytkownik po wybraniu oferty przechodzi do dedykowanego widoku konkretnego usługodawcy, gdzie może zapoznać się ze szczegółami oferty oraz zarezerwować wizytę/usługę.
+
+    \item Wszystkie serwisy pełnią funkcję pośrednika pomiędzy usługodawcą a klientem. Ich zadaniem jest ułatwienie znalezienia odpowiedniej usługi oraz nawiązania kontaktu lub dokonania rezerwacji.
+\end{itemize}
+
+\subsection*{Różnice}
+
+\begin{itemize}
+    \item Na stronach Booksy i Vagaro użytkownik ma możliwość filtrowania ofert według lokalizacji oraz czasu wykonywanej usługi, ponieważ te serwisy są skoncentrowane głównie na rezerwacji usług stacjonarnych, takich jak fryzjerstwo, kosmetyka czy usługi wellness. Fiverr natomiast koncentruje się na usługach cyfrowych wykonywanych zdalnie, takich jak projektowanie stron, tworzenie materiałów reklamowych czy usługi programistyczne.
+
+    \item Usługi oferowane w Booksy i Vagaro są często bardziej z góry określone, na przykład strzyżenie, masaż, manicure. W przypadku Fiverr oferta bywa bardziej elastyczna i indywidualna, bo wiele usług jest dopasowywanych do konkretnego zlecenia klienta.
+
+    \item Istotną różnicą jest również sposób kontaktu i omówienia realizacji usługi pomiędzy klientem a usługodawcą. W przypadku Booksy i Vagaro, w większości przypadków klient nie musi w żaden sposób kontaktować się bezpośrednio z usługodawcą. Lecz w serwisie Fiverr bardzo często wymagane jest szczegółowe opisanie wymagań i potrzeb przez klienta, jak również ewentualne poprawki.
+\end{itemize}
+
+\chapter{Projekt i implementacja aplikacji}
+
+\section{Wykorzystane technologie i narzędzia}
+\begin{itemize}
+    \item Java — język programowania wykorzystany do implementacji części serwerowej.
+    \item Spring Boot — framework użyty do budowy aplikacji backendowej.
+    \item Spring Data JPA — narzędzie do komunikacji z bazą danych.
+    \item Spring Security — odpowiedzialny za uwierzytelnianie i autoryzację użytkowników.
+    \item PostgreSQL — relacyjna baza danych.
+    \item JWT (JSON Web Token) — mechanizm tokenowego uwierzytelniania użytkowników.
+    \item React — biblioteka JavaScript wykorzystana do stworzenia interfejsu użytkownika.
+    \item TypeScript — statycznie typowany nadzbiór JavaScript wykorzystany w warstwie frontendowej.
+    \item Vite — narzędzie do budowania i uruchamiania aplikacji frontendowej.
+    \item React Router — biblioteka do obsługi routingu w aplikacji React.
+    \item Leaflet i react-leaflet — biblioteki do wyświetlania interaktywnych map z lokalizacjami ofert.
+    \item Nominatim (OpenStreetMap) — usługa geokodowania adresów wykorzystana przy dodawaniu produktów.
+    \item Docker — narzędzie pomocnicze do uruchamiania środowiska aplikacji.
+    \item Git i GitHub — narzędzia do kontroli wersji kodu źródłowego.
+    \item Stripe — narzędzie do implementacji obsługi płatności (demo).
+    \item SpringDoc OpenAPI (Swagger UI) – do generowania i testowania dokumentacji REST API
+    \item Spring Boot mail - narzędzie do generowania i wysyłania maili
+\end{itemize}
+
+
+\section{Architektura aplikacji}
+Aplikacja została zaprojektowana w architekturze klient-serwer. Część frontendowa, przygotowana w React, odpowiada za interakcję z użytkownikiem. Część backendowa, przygotowana w frameworku Spring Boot, udostępnia REST API odpowiedzialne za obsługę logiki biznesowej, komunikację z bazą danych oraz kontrolę dostępu do zasobów. Została zaimplementowana zgodnie ze wzorcem architektonicznym MVC (Model-View-Controller). Warstwa modelu odpowiada za reprezentację danych i dostęp do bazy danych, warstwa kontrolerów udostępnia endpointy REST API obsługujące żądania klienta, a rolę warstwy widoku pełni aplikacja kliencka napisana w React, która prezentuje dane zwrócone przez API. Takie podejście pozwala na oddzielenie warstw aplikacji, przez co pliki z kodem są uporządkowane, co wpływa na łatwiejszą nawigację w przypadku, gdy programista szuka konkretnego fragmentu aplikacji, np. gdyby nastała potrzeba zmiany logiki na poziomie bazy danych, byłoby wiadomo, że znajduje się ona na poziomie modelu. Ponadto rozdzielenie różniących się od siebie aspektów aplikacji, powoduje że gdy jest potrzeba zmiany tylko logiki bazy danych, nie ma potrzeby zmieniania kodu w innych warstwach aplikacji, ponieważ nie są one ściśle powiązane w jednej klasie.
+
+\newpage
+\section{Wymagania funkcjonalne}
+Do podstawowych wymagań funkcjonalnych aplikacji należą:
+\begin{itemize}
+    \item rejestracja i logowanie użytkowników,
+    \item rozróżnienie ról użytkowników, na przykład klient i usługodawca,
+    \item dodawanie, edycja i usuwanie ofert usług,
+    \item przeglądanie listy dostępnych usług,
+    \item wyszukiwanie i filtrowanie ofert,
+    \item wyświetlanie szczegółów wybranej oferty,
+    \item tworzenie rezerwacji przez klienta,
+    \item zarządzanie własnymi ofertami przez usługodawcę,
+    \item zarządzanie płatnościami oraz fakturami,
+    \item możliwość zobaczenia dostępnych ofert na mapie,
+    \item otrzymywanie maili przypominających.
+\end{itemize}
+
+
+
+
+\newpage
+\section{Wymagania niefunkcjonalne}
+\vspace{8mm}
+\begin{description}
+    \item[Przechowywanie haseł] Hasła użytkowników są przechowywane
+    wyłącznie w postaci skrótu kryptograficznego (BCrypt). Jest to funkcja jednokierunkowa, co oznacza, że z zapisanego skrótu nie da się odtworzyć oryginalnego hasła. Algorytm używa również tzw. sól, czyli losowy ciąg znaków który jest dodawany do hasła przed obliczeniem hasha. Dzięki temu te same hasła dwóch różnych użytkowników będą różne po wykonaniu skrótu. Podczas logowania wpisane hasło jest haszowane w ten sam sposób i porównywane z zapisanym skrótem w tabeli.
+    
+    \vspace{4mm}
+    \item[Uwierzytelnianie i autoryzacja] Dostęp do chronionych zasobów
+    wymaga uwierzytelnienia za pomocą tokenu JWT, a uprawnienia są przydzielane
+    na podstawie ról (USER, PROVIDER, ADMIN). Token jest podpisywany algorytmem HS256 z użyciem klucza, który jest tajny i przechowywany wyłącznie na serwerze, dzięki czemu nie można go zmienić, co mogłoby poskutkować zmianą przypisanej roli (np. z USER do ADMIN) przez osobę, która nie powinna była móc tego zrobić. Token JWT wygasa automatycznie po 30 minutach, co zmniejsza czas, w którym nieupoważniona osoba, która przechwyciłaby ważny token, mogłaby wysyłać żądania w imieniu użytkownika.
+    
+    \vspace{4mm}
+    \item[Bezpieczeństwo płatności] Dane kart płatniczych nie są
+    przetwarzane ani przechowywane w systemie - obsługę płatności realizuje
+    zewnętrzny operator Stripe w środowisku testowym. Używana jest po stronie backendu dedykowana biblioteka \texttt{stripe-java}, która pozwala m.in. na otrzymywanie Webhooków \footnote{ Webhooki są mechanizmem wykorzystywanym w tworzeniu stron internetowych w celu umożliwienia komunikacji w czasie rzeczywistym i wymiany danych między różnymi systemami lub aplikacjami. Umożliwiają one jednej aplikacji powiadomienie innej aplikacji o określonym zdarzeniu lub wyzwalaczu, który wystąpił.} z Stripe, potwierdzania ich oraz potwierdzenia, że pochodzą właśnie od Stripe. Webhooki rozwiązują również problem podwójnych rezerwacji, ponieważ dopiero kiedy serwer otrzyma Webhook potwierdzający płatność, w bazie danych po stronie serwera rezerwacja zmieni status na "CONFIRMED", w przypadku niepotwierdzenia płatności - rezerwacja usunie się po 15 minutach przez cykliczną metodę.
+
+    \vspace{4mm}
+    \item[Wydajność] Czas odpowiedzi API dla typowych operacji nie
+    przekracza 1 sekundy przy standardowym obciążeniu.
+
+    \vspace{4mm}
+    \item[Skalowalność] Bezstanowa architektura API (JWT) umożliwia
+    skalowanie poziome poprzez uruchomienie wielu instancji serwera. Aplikacja posiada również dokumentację generowaną w Swagger, co może zdecydowanie ułatwić dalsze programowanie oraz skalowalność.
+
+    \vspace{4mm}
+    \item[Responsywność interfejsu] Interfejs użytkownika działa poprawnie
+    na komputerach oraz urządzeniach mobilnych. Po stronie klienta są używane zapytania o media (ang. \textit{media queries}), które automatycznie dostosowują wygląd strony do wielkości ekranu na którym jest wyświetlana.
+\end{description}
+
+
+
+
+\newpage
+\section{Diagram encji}
+\begin{figure}[h]
+    \hspace*{-2.8cm}
+    \includegraphics[width=1.22\textwidth]{images/diagram_erd.png}
+    \caption{Diagram encji bazy danych aplikacji}
+    \label{fig:erd}
+\end{figure}
+\newpage
+
+
+\section{Opis struktury bazy danych}
+\vspace{5mm}
+\textbf{users} — przechowuje dane kont użytkowników. Pole \texttt{username} jest unikalne, co uniemożliwia rejestrację dwóch kont o tej samej nazwie użytkownika. Dodatkowo tabela zawiera pola \texttt{password} (hasz hasła). Hasła użytkowników nigdy nie są przechowywane w bazie danych w postaci jawnej. Podczas rejestracji (metoda \texttt{register}) hasło przekazane przez użytkownika jest haszowane za pomocą algorytmu \texttt{BCrypt}, a dopiero tak przetworzony hasz zapisywany. \texttt{role} (określające, czy użytkownik jest klientem czy usługodawcą) oraz \texttt{first\_name} i \texttt{last\_name}.
+
+\vspace{5mm}
+\textbf{products} — reprezentuje ogłoszenia dodawane przez usługodawców. Zawiera klucz obcy \texttt{user\_id}, wskazujący na właściciela ogłoszenia. Poza podstawowymi polami opisowymi (\texttt{name}, \texttt{description}, \texttt{price}, \texttt{image\_url}) tabela przechowuje pełne dane adresowe (\texttt{country}, \texttt{city}, \texttt{street}, \texttt{postal\_code}, \texttt{building\_number}) oraz współrzędne geograficzne (\texttt{longitude}, \texttt{latitude}), wykorzystywane do wyświetlania ogłoszeń na mapie.
+
+\vspace{5mm}
+\textbf{product\_types} — słownikowa tabela typów/kategorii usług. Pole \texttt{type} jest unikalne, dzięki czemu każda kategoria występuje w systemie tylko raz.
+
+\vspace{5mm}
+\textbf{product\_type\_relation} — tabela pośrednicząca realizująca relację wiele-do-wielu pomiędzy \texttt{products} i \texttt{product\_types}. Zawiera dwa klucze obce (\texttt{product\_id}, \texttt{product\_type\_id}) oraz złożone ograniczenie unikalności na parze tych kolumn, co zapobiega wielokrotnemu przypisaniu tego samego typu do tego samego ogłoszenia.
+
+\vspace{5mm}
+\textbf{product\_offers} —  różne warianty danego produktu. Zawiera klucz obcy \texttt{product\_id} oraz pola \texttt{duration\_minutes} (czas trwania usługi), \texttt{invoice\_available} (czy usługodawca umożliwia wystawienie faktury) i \texttt{cash\_payment\_availability} (czy dopuszczalna jest płatność gotówkowa).
+
+\vspace{5mm}
+\textbf{product\_offer\_availabilities} — definiuje dostępne terminy dla danej oferty. Zawiera klucz obcy \texttt{product\_offer\_id}, pole \texttt{day\_of\_week} oraz godziny \texttt{start\_time}/\texttt{end\_time}. Na parze (\texttt{product\_offer\_id}, \texttt{day\_of\_week}) nałożone jest ograniczenie unikalności, uniemożliwiające zdefiniowanie dwóch sprzecznych okien dostępności w tym samym dniu.
+
+\vspace{5mm}
+\textbf{reservations} — Tabela przechowująca rezerwacje. Zawiera dwa klucze obce: \texttt{user\_id} (nullable — pozwala na rezerwacje bez zalogowania) oraz \texttt{product\_offer\_id}. Dla rezerwacji dokonywanych przez gości istnieją również pola: \texttt{guest\_first\_name}, \texttt{guest\_last\_name} oraz unikalny \texttt{guest\_payment\_token}, służący do identyfikacji płatności bez konieczności logowania. Pole \texttt{stripe\_payment\_intent\_id} (unikalne) wiąże rezerwację z konkretną transakcją w systemie Stripe, a \texttt{status} i \texttt{payment\_expires\_at} obsługują cykl życia płatności (oczekująca, opłacona, wygasła).
+
+\vspace{5mm}
+\textbf{invoice\_requests} — żądania wystawienia faktury, powiązane z konkretną rezerwacją relacją jeden-do-jednego: klucz obcy \texttt{reservation\_id} jest unikalna, więc do jednej rezerwacji może zostać przypisane maksymalnie jedno żądanie faktury. Tabela przechowuje dane nabywcy (\texttt{buyer\_name}, \texttt{buyer\_nip}, adres) potrzebne do wystawienia faktury.
+\newpage
+
+
+
+\section{Uzasadnienie wyboru PostgreSQL}
+PostgreSQL jest bazą relacyjną o stale rozbudowywanej infrastrukturze oraz dużej ilości bibliotek i narzędzi wspierających programowanie, np. \texttt{JpaSpecificationExecutor} ze Spring Data JPA, umożliwiającym budowanie dynamicznych zapytań filtrujących bez konieczności ręcznego pisania wielu wariantów zapytań SQL.
+
+\newline
+\vspace{5mm}
+Relacyjne bazy danych pozwalają na definiowanie wielu złożonych relacji pomiędzy tabelami - wystarczy określić je za pomocą kluczy obcych w SQL. Kolejną zaletą ściśle zdefiniowanych struktur tabel jest integralność danych: baza sama pilnuje, aby rekord w tabeli referencyjnej odwoływał się do powiązanego wiersza w tabeli nadrzędnej, co eliminuje ryzyko niespójności. Dzięki temu unikamy tzw. osieroconych danych, czyli, gdy w tabeli nadrzędnej rekord zostaje usunięty, baza automatycznie potrafi rekord w bazie podrzędnej usunąć. W bazach nierelacyjnych (np. dokumentowych, NoSQL), gdzie dane bywają celowo zdenormalizowane, dane ze sobą powiązane, lub te same dane mogą występować w wielu miejscach jednocześnie, co wymaga ręcznego pilnowania spójności przy każdej aktualizacji.
+
+\newline
+\vspace{5mm}
+Powoduje to również mniejsze zużycie zasobów bazy danych przy zapisywaniu nowych rekordów. Jednakże często podczas zapytań zawierających wiele złączeń (\texttt{JOIN}) pomiędzy tabelami - odczyt danych może być zdecydowanie wolniejszy, oraz bardziej kosztowny obliczeniowo. PostgreSQL używa inteligentego planera zapytań i indeksów co zmniejsza znacznie koszt zapytań.
+
+\newline
+\vspace{5mm}
+Warto rozważyć hipotetyczną sytuację, w której aplikacja wymagałaby wielu zapytań o głębokim łańcuchu relacji (czyli wielopoziomowe zapytanie przechodzi po wielu tabelach kolejno żeby dostać się do potrzebnych informacji), w tym przypadku można byłoby się zastanowić nad wprowadzeniem dodatkowej bazy grafowej, np. Neo4j obok głównej bazy relacyjnej. Jest to podejście znane jako \textit{polyglot persistence}, gdzie każda technologia odpowiada za wybrane zapytania, które są dla niego najlepiej dopasowane. Przyspieszyłoby to działanie pewnych aspektów aplikacji, ale oczywiście mierzyłoby się to z dodatkowymi kosztami utrzymywania architektury oraz zwiększyłoby to złożoność architektury samej aplikacji. Dlatego decyzja o wprowadzeniu tego modelu powinna zależeć od częstotliwości wywoływania tych złożonych zapytań.
+
+\newline
+\vspace{5mm}
+Biorąc pod uwagę powyższe czynniki, w aplikacji ostatecznie zastosowano relacyjną bazę danych PostgreSQL, ponieważ jej model danych i silnie powiązane ze sobą tabele takie jak: oferty, rezerwacje, kategorie itd. — naturalnie wpasowuje się w ten właśnie wybór, a częstotliwość głębokich zapytań na wielu tabelach na raz w aplikacji nie uzasadnia wprowadzania dodatkowej bazy grafowej.
+
+
+\clearpage
+\section{Diagram przypadków użycia}
+\begin{figure}[H]
+    \hspace*{-5.5cm}
+    \includegraphics[trim=0mm 8cm 0mm 1cm, clip,
+                     width=1.35\linewidth, height=1.35\textheight, keepaspectratio]{UML_thesis.pdf}
+    \caption{Diagram przypadków użycia systemu rezerwacji usług}
+    \label{fig:use-case}
+\end{figure}
+\clearpage
+\newpage
+Na powyższym diagramie przypadków użycia, przedstawione zostały wszystkie funkcjonalności, wraz z aktorami, które reprezentują role występujące w aplikacji. Aktorzy są połączeni strzałkami, takie podejście ma na celu zobrazowanie dziedziczenia uprawnień pomiędzy nimi. USŁUGODAWCA (który w kodzie aplikacji jest zapisany jako PROVIDER z angielskiego), ma najwięcej uprawnień z całej trójki. Wszystkie uprawnienia, które posiada UŻYTKOWNIK oraz GOŚĆ - USŁUGODAWCA również posiada. Użytkownik staje się usługodawcą, gdy zostaną mu nadane uprawnienia przez operatora systemu z dostępem do bazy danych. 
+
+\vspace{5mm}
+Rolą która nie posiada uprawnień, które usługodawca posiada jest UŻYTKOWNIK (USER), czyli osoba, która jest zalogowana w aplikacji. Ma on dostęp do takich funkcjonalności jak: Przegląd ofert, filtrowanie ofert, rezerwacja oferty z możliwością płatności na miejscu, dostęp do panelu użytkownika, w którym może śledzić stan i informacje o jego rezerwacjach, oraz zarządzać tymi rezerwacjami (anulować, dokończyć płatność, filtrować). Nie posiada jednak funkcji dostępnych dla usługodawców takich jak: tworzenie i zarządzanie ofertami, zarządzanie rezerwacjami na daną ofertę, zarządzanie fakturami. 
+
+\vspace{5mm}
+Kolejną i ostatnią rolą o najmniejszej ilości uprawnień jest GOŚĆ. Jest to osoba która nie jest zalogowana w aplikacji. W skład dozwolonych operacji gościa są: przeszukiwanie i filtrowanie ofert, rezerwowanie ofert (wyłącznie płatność online). Przy rezerwacji, gość automatycznie dostaje maila z linkiem do wznowienia płatności (z okresem ważności 15 minut), w przypadku gdyby gość niechcąco wyszedł z aplikacji. Wtedy rezerwacja nigdy nie byłaby ważna, ponieważ nie została potwierdzona płatność. Takiego mechanizmu wysłania maila ze wznowieniem płatności nie ma dla zalogowanych użytkowników, ponieważ można to zrobić z panelu użytkownika.
+
+
+\newpage
+\section{Scenariusze przypadków użycia}
+\subsection{Scenariusz rezerwowania usługi}
+
+\vspace{3mm}
+\textbf{SYTUACJA:} Aby skorzystać z usługi, np. u fryzjera czy masażysty, klient zazwyczaj musi zadzwonić lub napisać do usługodawcy i wspólnie ustalić wolny termin. Zajmuje to czas obu stronom i często jest niemożliwe poza godzinami pracy lokalu.
+
+\vspace{5mm}
+\textbf{OPIS:} Anna chce umówić się na strzyżenie. Zamiast dzwonić do kilku salonów, wchodzi do aplikacji, filtruje usługi po swoim mieście i typie usługi, wybiera salon, a następnie ofertę „strzyżenie damskie”. W kalendarzu widzi wolne terminy, wybiera ten, który jej pasuje, i potwierdza rezerwację.
+
+
+\vspace{5mm}
+\textbf{Specyfikacja:}
+\begin{enumerate}
+    \item Klient wyszukuje i filtruje dostępne produkty (np. po mieście i typie usługi)
+    \item Klient wybiera produkt i jedną z jego ofert
+    \item Klient wybiera wolny termin z kalendarza dostępności oferty
+    \item Klient wybiera metodę płatności (płatność na miejscu dostępna tylko dla zalogowanych użytkowników i tylko jeśli oferta ją dopuszcza)
+    \item System sprawdza, czy wybrany termin nie koliduje z inną rezerwacją
+    \item System zapisuje rezerwację lub informuje klienta, że termin jest już zajęty
+\end{enumerate}
+
+\vspace{16mm}
+\subsection{Scenariusz płatności online}
+\vspace{3mm}
+\textbf{SYTUACJA} Usługodawcy często mają problem z klientami, którzy rezerwują termin, a potem się nie pojawiają. Pobieranie zaliczek przelewem wymaga z kolei ręcznego sprawdzania, czy wpłata dotarła.
+
+\vspace{5mm}
+\textbf{OPIS:} Marek, nie zakładając konta, rezerwuje masaż i wybiera płatność online. W trakcie wpisywania danych karty przypadkowo zamyka kartę przeglądarki. Na swojej skrzynce znajduje jednak wiadomość z linkiem do wznowienia płatności, dzięki któremu kończy ją w ciągu kilku minut, a jego rezerwacja zostaje potwierdzona.
+
+\vspace{5mm}
+\textbf{Specyfikacja:}
+\begin{enumerate}
+    \item Klient po złożeniu rezerwacji zostaje przekierowany do formularza płatności
+    \item System tworzy płatność w serwisie Stripe
+    \item Klient podaje dane karty i zatwierdza płatność
+    \item Stripe powiadamia system o udanej płatności (webhook)
+    \item System zmienia status rezerwacji na opłaconą
+    \item W przypadku przerwania płatności gość może ją wznowić przez link z wiadomości e-mail (ważny 15 minut), a zalogowany użytkownik z poziomu panelu użytkownika
+\end{enumerate}
+
+
+\newpage
+\subsection{Scenariusz tworzenia produktu}
+\vspace{3mm}
+\textbf{SYTUACJA:} Małe firmy usługowe często nie mają własnej strony z systemem rezerwacji. Informacje o cenach, usługach i godzinach pracy są rozproszone po mediach społecznościowych, a zapisy odbywają się telefonicznie.
+
+\vspace{5mm}
+\textbf{OPIS:} Kasia prowadzi salon kosmetyczny i posiada konto usługodawcy. Dodaje w aplikacji swój salon wraz z opisem, adresem i zdjęciami. Następnie tworzy oferty, np. „manicure hybrydowy” trwający 60 minut z możliwością płatności na miejscu, i ustala, że przyjmuje klientów od poniedziałku do piątku w godzinach 9–17. Od tej chwili klienci mogą samodzielnie rezerwować u niej wizyty.
+
+\vspace{5mm}
+\textbf{Specyfikacja:}
+\begin{enumerate}
+    \item Usługodawca podaje dane produktu: nazwę, opis, cenę, typy usług, adres oraz zdjęcia
+    \item System waliduje dane i zapisuje produkt
+    \item Usługodawca dodaje do produktu oferty: nazwę, opis, cenę, czas trwania i informację, czy możliwa jest płatność na miejscu
+    \item Usługodawca określa dostępność ofert: dni tygodnia oraz godziny rozpoczęcia i zakończenia
+    \item Produkt wraz z ofertami staje się widoczny dla klientów i można go rezerwować
+\end{enumerate}
+
+
+
+
+
+
+
+\chapter{Implementacja i dokumentacja techniczna}
+\section{Diagram komponentów}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{diagram_komponentow.pdf}
+    \caption{Diagram komponentów systemu}
+    \label{fig:components}
+\end{figure}
+\newpage
+\subsection{Diagram komponentów}
+przedstawia z jakich warstw jest zbudowana aplikacja oraz cały przepływ danych pomiędzy tymi warstwami. Począwszy od akcji wykonywanych przez użytkownika w przeglądarce, kończąc na bazie danych, lub integracji z zewnętrznymi serwisami (np. Stripe, Nominatim, Serwer SMTP). 
+
+
+
+\vspace{5mm}
+\newline
+\subsection{Przeglądarka/Frontend}
+Pierwszy etap przepływu danych dzieje się w przeglądarce internetowej. Interakcje z interfejsem UI, wykonywane przez użytkownika, są zbierane do formatu JSON, a następnie wysyłane poprzez sposób komunikacji z serwerem HTTP (aplikacja działa lokalnie).
+
+
+
+\vspace{5mm}
+\newline
+\subsection{Backend -- Spring Security}
+\label{sec:spring-security}
+Pierwszą warstwą, przez którą przepływają najpierw dane po otrzymaniu ich z klienta na serwer, jest Spring Security. Przed każdym wykonaniem się żądania, które wymaga potwierdzenia przez token autoryzujący JWT, backend sprawdza czy token jest poprawnie podpisany i nie wygaśnięty, jakie ma pozwolenia dostępu (permissions) do aplikacji oraz kto to jest. Token jest trzyczęściowym ciągiem znaków oddzielonych kropkami (header.payload.signature). \textbf{header} przechowuje zakodowane informacje o algorytmie używanym do hashowania części signature (w aplikacji jest to HS256), oraz typ tokenu, którym w tym przypadku jest JWT. \textbf{payload} zawiera tzw. claims, czyli dane o użytkowniku i samym tokenie. Owe claims zawierają dane takie jak: email użytkownika, jego rola uprawnień, czas wystawienia tokenu oraz czas wygaśnięcia (w aplikacji czas wygaśnięcia jest ustawiony na 30min). \textbf{signature} to zabezpieczenie integralności tokenu. Tworzy się go za pomocą algorytmu HMAC z funkcją skrótu SHA-256 (w tym przypadku), który jest algorytmem tzw. symetrycznym, czyli ten sam klucz jest używany do weryfikacji i podpisywania. Hashowanie przebiega używając pola payload (zakodowanego algorytmem Base64URL), header (również zakodowany w Base64URL), oraz secret\footnote{Jest to ciąg znaków, którego używa się, aby stworzyć signature, mający na celu zidentyfikowanie i autoryzację użytkowników wysyłających żądania do chronionych zasobów naszego serwera. Secret powinien być ściśle prywatny i chroniony przed dostaniem się w ręce nieupoważnionych osób, ponieważ znając secret, włamywacz mógłby samodzielnie wystawiać poprawnie podpisane tokeny i podszyć się pod dowolnego użytkownika w tym administratora}. Aby otrzymać signature, serwer łączy kropką zakodowane części header i payload, oblicza z nich kod HMAC-SHA256 z użyciem secretu, a wynik koduje algorytmem Base64URL. Przy każdym żądaniu wykorzystującym token, serwer na nowo liczy signature i porównuje ją. 
+
+
+
+\vspace{5mm}
+\newpage
+\subsection{Backend - Kontrolery REST}
+
+Następnie po początkowym sprawdzeniu prawidłowości tokenu dołączonego do żądania wysłanego od klienta, dane są zarządzane przez warstwę tzw. kontrolerów. Jest to warstwa, która odpowiada za otrzymywanie żądań od klienta oraz późniejsze zwracanie wyniku. Następnie deleguje wykonanie potrzebnych działań do kolejnych warstw aplikacji (najczęściej jest to warstwa serwisów, która odpowiada przeważnie za implementację logiki biznesowej). W Spring Boot klasy kontrolerów oznacza się adnotacją @RestController. Każda metoda w kontrolerze odpowiada za konkretny typ żądania HTTP, które definiuje czy metoda będzie np. zapisywać dane do bazy danych (typ POST), wyszukiwać dane (GET), zmieniać dane (PUT/PATCH), lub usuwać (DELETE). Są to najczęściej używane oznaczenia do podstawowych operacji. Kolejną funkcjonalnością, która wchodzi w skład kontrolera jest walidacja danych wejściowych. Gdy dane od klienta trafiają do tej warstwy, jest sprawdzana poprawność wprowadzonych danych. Na przykład gdyby użytkownik wpisał nieprawidłowy format maila - zostałby wyrzucony wyjątek, jest to więc pierwsza linia obrony po stronie serwera w takich przypadkach. Warto wspomnieć również o tym jak metody zwracają dane do klienta. Używają do tego protokołu HTTP (tak samo jak klient gdy wysyła dane do backendu). W przypadku gdy metoda nie przewiduje zwracania żadnych danych, może zwrócić kod statusu, który informuje klienta o wyniku wykonanych działań w backendzie. Taki ACK najczęściej zawiera kod statusu. Przykładowe najczęściej spotykane statusy to: 200/OK (oznacza, że operacja przebiegła pomyślnie), 201/CREATED (informuje że zasób został zapisany pomyślnie), jak również statusy niepowodzenia takie jak: 400/BAD\_REQUEST (często używany w np. w przypadku wpisania niepoprawnego formatu maila), 401/UNAUTHORIZED (gdy, użytkownik np. nie posiada poprawnego tokenu JWT), 403/FORBIDDEN (używany, gdy metoda jest chroniona i użytkownik nie ma do niej dostępu), 404/NOT\_FOUND (w przypadku nie znalezienia zasobów), 409/CONFLICT (gdy np. termin rezerwacji jest już zajęty). Inaczej jest, gdy metoda ma za zadanie zwrócić klientowi dane. Robi to w formacie JSON, również używając protokołu HTTP.
+
+\newline
+\textbf{Backend -- Serwisy}
+Warstwa serwisów jest kolejnym etapem przepływu danych. Odpowiadają one za logikę biznesową aplikacji. Są ściśle powiązane z kontrolerami, dzięki mechanizmowi tzw. wstrzykiwania zależności występującego w Spring Boot metody serwisowe mogą być bezpośrednio wywołane w warstwie kontrolera. Podczas wysłania żądania przez klienta do kontrolera, kontroler wywołuje metody serwisowe potrzebne do prawidłowego przeprowadzenia działań. W frameworku istnieje również bardzo ważna i często używana adnotacja \textbf{@Transactional}. Oznacza ona, że wszystkie operacje na bazie danych wykonane w ramach metody stanowią jedną transakcję, inaczej wszystkie operacje na bazie danych w danej metodzie muszą przejść pomyślnie. Jeśli jednak któraś operacja nie przebiegnie, wszystkie zmiany, które już nastąpiły się cofają i stan tabeli pozostaje taki jak przed wywołaniem metody. Jest to inaczej tzw. rollback. Takie podejście pozwala na zachowanie integralności danych. W przypadku tej aplikacji widać to dobrze na metodzie, która tworzy produkt. W środku metoda zapisuje najpierw kategorie produktu do tabeli z kategoriami, a dopiero potem tworzy się i zapisuje sam produkt, więc w przypadku pomyślnego zapisania kategorii, a niepowodzenia w zapisie produktu, aplikacja miałaby zbędne kategorie nieodpowiadające żadnemu produktowi. Na tym poziomie są wyrzucane również wyjątki, które są przechwytywane przez \textbf{GlobalExceptionHandler}. Jest to klasa która ma za zadanie znormalizować wyrzucane wyjątki, czyli zamiast dziesiątek linii kodu opisującego błąd, widoczny jest schludny komunikat zawierający takie informacje jak: klasa, w której wystąpił wyjątek, status HTTP wyjątku (np. 404), czas wystąpienia, URI żądania, podczas którego wystąpił wyjątek, i opcjonalnie komunikat ściślej opisujący wyjątek. Warto wspomnieć o niestandardowych wyjątkach występujących w aplikacji. Definiuje się je tworząc klasę, która dziedziczy po klasie \textbf{RuntimeException} (definiująca wyjątki wywołane podczas działania aplikacji). Następnie można ją również obsłużyć i znormalizować tak samo w \textbf{GlobalExceptionHandler}. Przykładem takiego niestandardowego wyjątku w aplikacji jest \textbf{DatesOverlappingException}. Wyjątek zostaje wyrzucony, gdy termin, na który użytkownik chce zarezerwować usługę, jest już zajęty lub nakłada się na istniejącą rezerwację. Kolejną rzeczą obsługiwaną w tej warstwie jest zmiana zwracanych danych klientowi, aby uniknąć wycieku wrażliwych danych lub po prostu aby metoda nie zwracała danych zbędnych dla klienta. Robi się to za pomocą DTO\footnote{Obiekt transferu danych (DTO, ang. Data transfer object) -- w programowaniu obiektowym, obiekt służący wyłącznie do przenoszenia danych między warstwami aplikacji, niezawierający logiki biznesowej.}. Definiuje się je w Javie w rekordach\footnote{specjalny rodzaj klasy, który służy do tworzenia prostych, niemutowalnych obiektów będących nośnikami danych.}, zawierają one automatycznie equals(), hashCode() i toString(), akcesory o nazwie pola oraz konstruktor przyjmujący wszystkie pola, jak również tzw. kompaktowe konstruktory, dzięki którym można nadać walidację danych bez potrzeby przepisywania na nowo wszystkich pól. Pola w rekordzie są również niemutowalne, czyli finalne i prywatne. Rekordy poprawiają więc czytelność aplikacji i zmniejszają ilość zbędnego kodu. Aplikacja używa DTO praktycznie w każdej metodzie, która zwraca jakieś dane. Jest to szczególnie ważne w przypadku logowania lub rejestracji, aby nie dopuścić do sytuacji, w której metoda odpowiadająca za logowanie zwraca klientowi np. hasło. Mogłoby to poskutkować przejęciem hasła przez osobę nieuprawnioną, która mogłaby przechwycić ruch aplikacji. Nawet jeśli hasło jest już zahaszowane, byłoby to i tak niebezpieczne i niepożądane. Żeby temu zapobiec, w aplikacji jest używany DTO: \textbf{LoginResponse}, który zwraca: token JWT, nazwę użytkownika (email) i jego role. Serwisy są używane również do komunikacji z zewnętrznymi API. Aplikacja integruje się z trzema usługami zewnętrznymi: Stripe API (do obsługi płatności), Nominatim (To usługa geokodowania oparta na danych OpenStreetMap), Serwer SMTP (do połączenia z Google Gmail i wysyłania automatycznych maili).
+\newpage
+\vspace{7mm}
+\begin{enumerate}
+    \item \textbf{Stripe API} jest to zewnętrzny serwis przeznaczony do obsługi płatności w aplikacji. Tworząc konto oraz używając trybu testowego w Stripe, użytkownik otrzymuje klucze. Kluczami istotnymi dla backendu są dwa: jednym z nich jest klucz prywatny (secret\_key), który daje dostęp do komunikacji oraz utworzenia sesji płatności w Stripe. Drugim zaś jest prywatny klucz webhook, który pozwala serwerowi Stripe na wysłanie informacji do backendu aplikacji, gdy np. opłata przebiegła pomyślnie lub zakończyła się niepowodzeniem. Następnie ta informacja trafia do dedykowanej metody w aplikacji, która ma za zadanie ustawić status rezerwacji na potwierdzony, lub odrzucony w bazie danych. Używana jest do tego specjalna biblioteka stworzona do Java -- stripe-java.
+    \item \textbf{Nominatim} w aplikacji jest używany do geokodowania. Tworząc produkt, użytkownik ma możliwość wpisania adresu, w którym będzie odbywała się usługa, lub siedziby podmiotu wykonującego usługę. Następnie komunikując się z Nominatim API, gdy adres jest poprawny i został odnaleziony, zostaje wykonane geokodowanie tego adresu. Następnie jest przekształcany na współrzędne geograficzne, które są potem zapisywane wraz ze stworzonym produktem. Użytkownik ma również możliwość filtrowania usług według miast. Aplikacja komunikuje się z Nominatim API, tworząc URI zgodny z formatem żądań Nominatim z parametrem miasta wpisanego przez użytkownika. Następnie zwracane są wszystkie miasta znalezione o tej nazwie. Warto wspomnieć, że w przypadku, gdy znaleziono więcej niż 10 miast, API zwróci maksymalnie 10, wynika to z celowego ustawienia limitu podczas tworzenia URI po stronie backendu. 
+    \item \textbf{Serwer SMTP} protokół działający w ramach biblioteki spring-boot-starter-mail, stworzona do wysyłania automatycznych wiadomości email z powiązanego konta np. Gmail. W aplikacji, maile są wysyłane do użytkowników w trzech przypadkach: potwierdzenie opłacenia usługi, przypomnienie o wizycie 24 godziny przed jej terminem oraz wiadomość z linkiem do kontynuowania płatności dla użytkowników niezalogowanych.
+\end{enumerate}
+
+
+
+
+
+\newpage
+\section{Diagramy sekwencyjne}
+\vspace{10mm}
+\begin{figure}[H]
+    \centering{\textbf{Diagram sekwencyjny procesu rezerwowania usługi}}
+    \hspace*{-2.88cm}
+    \includegraphics[width=1.25\linewidth]{diagram_sekwencyjny.pdf}
+    \caption{Diagram sekwencyjny procesu rezerwacji}
+    \label{fig:seq-rezerwacja}
+\end{figure}
+\newpage
+\newpage
+Jednym z kluczowych procesów zachodzących w aplikacji jest rezerwowanie. Na powyższym diagramie został on szczegółowo przedstawiony. Po wyborze oferty użytkownikowi jest przedstawiany kalendarz, w którym użytkownik może wybrać dzień z dostępnymi terminami. Po kliknięciu w dany dzień jest następnie wyświetlana lista dostępnych terminów na ten dzień (jest ona tworzona na podstawie pola ,,duration\_minutes'' w tabeli PRODUCT\_OFFERS, która definiuje szacowaną długość wykonywania usługi, oraz pól ,,day\_of\_week'', ,,start\_time'' i ,,end\_time'' w tabeli PRODUCT\_OFFER\_AVAILABILITIES, połączonej z PRODUCT\_OFFERS relacją wiele do jednego. Te pola ustalają ramy czasowe, w których może być wykonana rezerwacja. Na koniec jest wyświetlana lista przycisków z godzinami dostępnych terminów obliczonymi na podstawie tych pól). Przy każdym terminie istnieje również opcja prośby o fakturę (gdy usługodawca pozwala na taką możliwość)\footnote{Ze względu na czytelność diagramu pominięto logikę tworzenia i zapisu danych faktury.}. Po kliknięciu w wybrany termin i zaakceptowaniu rezerwacji użytkownikowi zalogowanemu jest przedstawiane okno wyboru płatności (gotówkowo lub online), zaś użytkownicy niezalogowani (goście) zostają przekierowani na stronę formularza wypełnienia danych osobowych. Kolejnym krokiem jest wysłanie żądania przez klienta do serwera na endpointy odpowiedzialne za tworzenie rezerwacji w warstwie kontrolerów. Logika tworzenia rezerwacji jest rozdzielona, więc różna dla użytkowników zalogowanych i niezalogowanych (gości). Z tego względu istnieją dwa endpointy POST/reservations oraz POST/reservations/guest. Powodem takiego podziału jest głównie różnica wymaganych danych wprowadzanych do formularza przez użytkowników. W przypadku gościa musi on podać swoje imię, nazwisko oraz e-mail, zaś gdy użytkownik jest zalogowany, jego dane są pozyskiwane dzięki tokenowi JWT. Co więcej, możliwość płatności gotówkowej jest dostępna tylko dla użytkowników zalogowanych, goście nie mają takiej możliwości, aby ograniczyć masowe rezerwacje danej usługi przez osoby, które nie mają na celu skorzystania z usługi, a chcą np. przeciążyć system lub specjalnie zablokować dany termin innym usługobiorcom. Takie podejście ma sens, ponieważ nieopłacone rezerwacje bezgotówkowe są usuwane z systemu automatycznie po 15 minutach, zapewnia to pole w rezerwacji ,,payment\_status'', które zmienia się z ,,PENDING\_PAYMENT'' na ,,CONFIRMED'' po uiszczeniu opłaty lub ,,CANCELLED'' przy odrzuceniu. Metoda odpowiadająca za usuwanie nieopłaconych rezerwacji po 15 minutach, naturalnie bierze pod uwagę również to, czy użytkownik chce zapłacić gotówką, czy online, i usuwa pod warunkiem, że pole ,,PAYMENT\_METHOD'' w rezerwacji jest ,,CARD''. Po otrzymaniu żądania są sprawdzane podstawowe zabezpieczenia (np. w przypadku gości -- czy dane osobowe mieszczą się w ustalonych wcześniej ramach), jeśli tak -- operacja przechodzi do kolejnego etapu, jakim jest obsługa logiki biznesowej. Wywoływana jest metoda addReservation lub addReservationGuest (dla gości), która w parametrze otrzymuje dane użytkownika oraz opcjonalnie faktury. Komunikując się z bazą danych, warstwa serwisów wywołuje przeszukanie bazy danych za pomocą metody findOverlappingReservations, która zwraca boolean, sprawdzając, czy rezerwacja w tym terminie jest już zajęta, i jeśli tak, to na poziomie serwisu jest zgłaszany wyjątek ,,DatesOverlappingException'', który potem jest mapowany w kontrolerze na błąd o statusie 409 (CONFLICT); komunikat zwracany użytkownikowi w tym przypadku brzmi: ,,termin zajęty''. Taki mechanizm jest bardzo ważny projektowo, ponieważ po pierwsze chroni przed sytuacją, w której użytkownik samodzielnie wyśle zapytanie do aplikacji, nie używając interfejsu, unikając przy tym zabezpieczeń po stronie frontendu. Po drugie, gdy dwóch użytkowników spróbuje zarezerwować usługę w tym samym momencie na ten sam termin, mogłoby to poskutkować utworzeniem się dwóch rezerwacji na ten sam termin. Natomiast to nie rozwiązuje całkowicie tego problemu, ponieważ używana w aplikacji baza danych, jaką jest PostgreSQL, ma domyślny poziom izolacji\footnote{Poziom izolacji transakcji określa, jakie zmiany innych równoległych transakcji na bazie danych są widoczne dla danej transakcji oraz jak baza reaguje na konflikty między nimi.} ,,READ\_COMMITTED'', więc metoda findOverlappingReservations będzie widziała dane w bazie tylko te, które zostały już zatwierdzone, czyli gdzie transakcja przebiegła pomyślnie. W takim przypadku, gdyby dwie osoby zarezerwowały ten sam termin, mogłoby to również poskutkować stworzeniem się dwóch rezerwacji. W aplikacji przy metodach zapisu rezerwacji jest ustawiony więc inny poziom izolacji, jakim jest ,,SERIALIZABLE''. Przy takim podejściu transakcja jest wycofywana, gdy dane, które odczytała, zostały w międzyczasie zmienione przez inną transakcję. Przy faktycznym wycofaniu się transakcji z tego powodu, zostanie zgłoszony wyjątek ConcurrencyFailureException, który w aplikacji został obsłużony i zwracany użytkownikowi jako komunikat informujący o zajęciu terminu przez kogoś innego. Natomiast gdy termin jest wolny, rezerwacja się zapisuje, zwracając specjalnie przygotowane DTO z danymi rezerwacji, a użytkownik po stronie interfejsu zostaje przekierowany do płatności (z wyjątkiem zalogowanych użytkowników, którzy zdecydowali się na płatność gotówką; w takim przypadku zostaje wyświetlona informacja o pomyślnym złożeniu rezerwacji). Ponadto po wykonaniu zapisu rezerwacji jest również wysyłany mail do niezalogowanych użytkowników, pozwalający użytkownikom kontynuować płatność. Ma to na celu zapobiegać sytuacji, w której okno płatności zostanie zamknięte przed opłaceniem usługi. W mailu zawarty jest link tworzący nową transakcję oraz przekierowujący użytkownika do formularza płatniczego. Każda rezerwacja gościa posiada token \texttt{GuestPaymentToken} (UUID), który stanowi część linku do dokończenia płatności. Token jednoznacznie identyfikuje rezerwację bez konieczności logowania i jest trudny do odgadnięcia przez osoby trzecie. Dodatkowo przed utworzeniem transakcji sprawdzany jest status rezerwacji, dzięki czemu link nie działa dla rezerwacji już opłaconych, co zapobiega podwójnej płatności. W przypadku użytkowników zalogowanych taki mail nie zostaje wysłany, ponieważ użytkownicy mogą przejść do dokończenia płatności w panelu użytkownika, w którym są wylistowane ich rezerwacje z opcją dokonania opłacenia. Trzeba zaznaczyć, że metoda sendGuestPaymentLink, widniejąca na diagramie, jest wywoływana tylko w przypadku niezalogowanych użytkowników, z powodu opisanego wcześniej. Proces płatności online został opisany na kolejnym diagramie poniżej.
+\newpage
+\begin{figure}[H]
+    \centering{\textbf{Diagram sekwencyjny procesu płatności}}
+    \hspace*{-3.5cm}
+    \includegraphics[width=1.3\linewidth]{diagram_sekwencyjny-platnosc.pdf}
+    \caption{Diagram sekwencyjny procesu płatności}
+    \label{fig:seq-platnosc}
+\end{figure}
+Kolejnym procesem, który jest rdzeniem aplikacji, jest proces płatności. Wszyscy użytkownicy mają możliwość zapłacenia kartą, a zalogowani użytkownicy mogą również wybrać płatność gotówkową. Płatnościami, ich autoryzacją i przetwarzaniem zajmuje się zewnętrzny serwis -- Stripe. Komunikując się z nim, aplikacja jest w stanie operować danymi wewnątrz bazy danych. Diagram przedstawiony powyżej przedstawia proces wykonujący się po stworzeniu rezerwacji. Po pomyślnym zarezerwowaniu terminu następuje komunikacja ze stroną backendu. W zależności od tego, czy użytkownik jest zalogowany, czy nie, są wysyłane żądania do danego endpointu. Dla zalogowanych użytkowników żądanie trafia do POST payments/payment-intent, a w przypadku niezalogowanych do POST payments/guest/payment-intent. Odpowiedzialne są za obsługę obiektów płatności w Stripe. Logika endpointów jest rozdzielona celowo: w przypadku gości (niezalogowanych użytkowników) podczas tworzenia rezerwacji generowany jest również token identyfikacji płatności przy każdej rezerwacji gościa. Bez takiego tokenu ktoś mógłby odgadnąć id rezerwacji, przez co mógłby wykonać pewne operacje na tej rezerwacji. Z długim tokenem UUID trzeba odgadnąć id oraz token, co jest niezwykle ciężkie do odgadnięcia. W przypadku zalogowanych użytkowników takiego problemu nie ma, ponieważ rezerwację szukamy za pomocą tokenu JWT oraz id rezerwacji. Aby zrozumieć całkowite działanie procesu płatności, trzeba cofnąć się do etapu tworzenia rezerwacji. Rezerwacja jest tworzona przy użyciu osobnego endpointu i metod przed rozpoczęciem procesu płatności. Po stworzeniu rezerwacji obiekt zarezerwowanej usługi jest zwracany do klienta, który, otrzymując te dane, rozpoczyna płatność, wysyłając żądanie do backendu na wspomniane wcześniej endpointy tworzące payment-intent, czyli obiekt tworzony na serwerze Stripe, noszący dane o płatności. Metody najpierw wyszukują odpowiadającą płatności rezerwację, ponieważ to ona przechowuje informacje o np. cenie usługi, która jest niezbędna do utworzenia payment-intent. W przypadku nieznalezienia odpowiadającej rezerwacji wyrzucany jest wyjątek. W rezerwacji istnieje również pole ,,stripePaymentIntentId'', metoda więc sprawdza, czy to pole nie jest null. Gdyby wynikło, że faktycznie nie jest null, wyszukiwany byłby obiekt intent na serwerze Stripe, na podstawie wcześniej wspomnianego pola ,,stripePaymentIntentId''. Biblioteka ,,stripe-java'' ma wiele wbudowanych metod. Jedną z nich jest ,,PaymentIntent.retrieve'', właśnie ona jest odpowiedzialna za wyszukiwanie payment-intent, komunikując się ze Stripe API. Podczas wykonywania się tego typu metod z biblioteki ,,stripe-java'' program wie dokładnie, z którym środowiskiem testowym Stripe ma się skomunikować, ponieważ tworząc środowisko w Stripe, twórca aplikacji otrzymuje tzw. ,,STRIPE\_SECRET\_KEY'', który jest unikalnym tajnym kluczem API pozwalającym właśnie na komunikację. W aplikacji tworzony jest Bean konfiguracyjny, który zawiera właśnie to ID. Gdy metoda ,,PaymentIntent.retrieve'' faktycznie znajdzie już obiekt Stripe o tym ,,stripePaymentIntentId'', zwracany do klienta zostaje ID intentu oraz ,,ClientSecret''. ClientSecret jest to klucz tworzony przez Stripe przy każdym tworzeniu nowego obiektu intent, jest on bardzo ważny, ponieważ pozwala on na weryfikację, czy płatność pochodzi z prawdziwego serwera Stripe, a nie jest podrabiana. Następnie użytkownik zostaje automatycznie przekierowany do okna płatności. Po stronie klienta używana jest biblioteka do Reacta od Stripe -- ,,stripe-js'', która pozwala na komunikację ze Stripe API i obsługę płatności kartą. Następnie informacje o karcie płatniczej są dostarczane do testowego środowiska Stripe, które waliduje ważność karty, weryfikuje ją oraz księguje, zmieniając odpowiednio status płatności, np. na ,,succeeded'', czyli sukces. Weryfikacja jest możliwa właśnie dzięki ClientSecret, który wraz z danymi karty oraz stripePaymentIntentId jest wysyłany do Stripe, następnie tam jest weryfikowane, czy sekret wysłany od klienta pokrywa się z tym podpiętym do odpowiadającego obiektu intent. Warto zaznaczyć, że dane karty nie mają kontaktu ze stroną backendu, czyli frontend od razu wysyła dane do środowiska Stripe. Jest to ważne z punktu widzenia bezpieczeństwa danych: aplikacja oddaje całość przetwarzania płatności do Stripe, aby uniknąć np. wycieku danych kart po stronie backendu, oraz dzięki temu aplikacja ogranicza zakres wymagań PCI DSS. Bezpieczeństwo danych aplikacja przekazuje do zewnętrznego serwisu z dobrą reputacją i dużym skupieniem na zabezpieczeniach przed włamaniami. Z powodu tego, że aplikacja działa w środowisku testowym, prawdziwe dane kart nie działają. W razie potrzeby sprawdzenia, czy płatności w aplikacji działają poprawnie, powinno się użyć domyślnych danych karty, które będą zaakceptowane przez Stripe w tym przypadku, czyli: 4242 4242 4242 4242 oraz dowolny numer CVV. Przy pomyślnym potwierdzeniu płatności użytkownik dostaje informację zwrotną o pomyślnej płatności, a do backendu zostaje wysłany automatycznie webhook, który aplikacja nasłuchuje. Webhook wysyła żądanie na endpoint POST payments/webhook. Aplikacja weryfikuje, czy webhook pochodzi od Stripe i nie został zmodyfikowany, ponieważ we właściwościach aplikacji jest zdefiniowany ,,STRIPE\_WEBHOOK\_SECRET'', czyli klucz, który jest generowany dla każdego środowiska Stripe i na jego podstawie jest ustalana wiarygodność otrzymywanego webhooka. Żądanie od Stripe zawiera między innymi reservationId, co pozwoli zidentyfikować rezerwację i zaktualizować jej status. Następnie wywołana zostaje metoda ,,confirmPaid'', która na podstawie wartości metadanych otrzymanych przez serwer od Stripe oznaczy rezerwację jako taką, której płatność się powiodła, lub nie zmieni statusu, gdy płatność się nie powiodła, zwracając przy tym odpowiednie komunikaty sukcesu lub błędu. Przy pomyślnym przebiegu jest wysyłany mail z potwierdzeniem.
+
+\newpage
+\begin{figure}[H]
+    \centering{\textbf{Diagram sekwencyjny procesu logowania}}
+    \hspace*{-3.5cm}
+    \includegraphics[width=1.3\linewidth]{diagram_sekwencyjny_logowanie.pdf}
+    \caption{Diagram sekwencyjny procesu logowania}
+    \label{fig:seq-logowanie}
+\end{figure}
+Ostatnim diagramem sekwencyjnym przedstawionym w pracy jest proces logowania. Budowa tokenu JWT oraz mechanizm jego weryfikacji zostały opisane w podrozdziale~\ref{sec:spring-security}. Niezalogowany użytkownik nadal może korzystać z wielu funkcji aplikacji takich jak: Wyszukiwanie rezerwacji i ich filtrowanie, rezerwowanie oraz płatność online. Jednakże posiadanie konta w aplikacji przynosi wiele użyteczności. W aplikacji w pasku nawigacji na górze strony widnieją dwie zakładki: ,,signin" (zaloguj się) i ,,signup" (zarejestruj się). Okno rejestracji oraz logowania wygląda praktycznie tak samo, oraz naturalnie, żeby móc się zalogować, najpierw trzeba się zarejestrować. Po wpisaniu w zakładce rejestracji prawidłowego maila i hasła, które w aplikacji musi mieć co najmniej 8 znaków, konto użytkownika jest założone. Użytkownik nie jest jednak jeszcze zalogowany. Aby się zalogować, trzeba przejść do zakładki ,,signin'' i wypełnić pola ,,email'' i ,,hasło'' danymi wpisanymi przy rejestracji. Po wpisaniu danych i kliknięciu przycisku "signin", zostaje wysłane żądanie do serwera na endpoint POST auth/signin. Na tym etapie użytkownik jest uwierzytelniany. Metoda ,,authenticate'' z biblioteki spring-security, działa wewnątrz tzw. AuthenticationManager, czyli wewnętrzny mechanizm, który zajmuje się obsługą uwierzytelnianie żądań zalogowania. AuthenticationManager przekazuje dane użytkownika do DaoAuthenticationProvider, który następnie wywołuje metodę ,,loadUserByUsername", która jest używana do wyszukania użytkownika w bazie. Jest ona wbudowaną metodą spring security. W aplikacji jest implementowana używając adnotacji @Override, aby zdefiniować na jakiej podstawie jest wyszukiwany użytkownik. W tym przypadku jest to pole ,,username'', które zawiera email użytkownika. Metoda ,,authenticate'' odpowiada również za weryfikację hasła: hasło wpisane przez użytkownika jest porównywane z hashem BCrypt zapisanym w bazie (salt jest przechowywany wewnątrz hasha). Jeśli hasło jest poprawne, proces przechodzi do etapu budowy tzw. claims, czyli danych o użytkowniku, które token JWT będzie przenosił, a następnie do zakodowania i podpisania tokenu. Po prawidłowej weryfikacji do klienta jest zwracany komunikat o pomyślnym zalogowaniu wraz z tokenem JWT, emailem i rolami. W przypadku, gdyby, użytkownik w bazie nie został znaleziony, lub hasło byłoby niepoprawne, zostałby wyłapany wyjątek o statusie 401 oraz komunikat.
+
+
+
+\chapter{Testy i wyniki}
+\section{Testowanie}
+W aplikacji zastosowano testy jednostkowe z użyciem atrap (mocków)\footnote{Mock objects (mocki) w testach to obiekty naśladujące zachowanie prawdziwych obiektów w systemie. Służą do symulowania zachowania zależności lub współpracujących komponentów kodu.} oraz testy integracyjne\footnote{Testy integracyjne sprawdzają, czy moduły, usługi i systemy poprawnie ze sobą rozmawiają: czy dane przekazywane przez interfejs mają właściwy format, znaczenie i kolejność.}, wykonywane na prawdziwej bazie PostgreSQL uruchamianej w kontenerze Docker za pomocą biblioteki Testcontainers\footnote{Testcontainers to biblioteka umożliwiająca uruchamianie w trakcie testów jednorazowych kontenerów Docker (np. baz danych). Dzięki temu testy wykonują się na tym samym silniku bazy, który działa w aplikacji, a środowisko testowe jest izolowane i powtarzalne.}. Pokrycie testów jest generowane w raporcie dostępnym również w formacie HTML przy użyciu biblioteki JaCoCo. Całkowite pokrycie instrukcji wynosi 44\%. W pliku \texttt{pom.xml} wykluczono z raportu pliki, takie jak DTO lub mappery (klasy zajmujące się mapowaniem obiektów na DTO), ponieważ nie zawierają logiki biznesowej i nie powinny wpływać na całkowite pokrycie funkcjonalności aplikacji. Skupiono się na najważniejszych aspektach aplikacji, takich jak rezerwacje, płatności, autentykacja oraz fakturowanie. Warto zaznaczyć, że do testów jest stworzony oddzielny plik application.properties, w którym definiujemy testowe dane potrzebne np. do sprawdzenia czy wysyłanie maili działa lub webhook stripe zwraca prawidłowe dane.
+
+\newpage
+\vspace*{-2cm}
+\subsection{Testy jednostkowe}
+W aplikacji jest zawarta paczka bibliotek ,,spring-boot-starter-test'', zawiera ona w sobie potrzebne podzespoły do przeprowadzenia testów jednostkowych z użyciem mocków. Pierwszym z nich jest JUnit 5, jest to framework, który między innymi inicjalizuje klasy testów jednostkowych, dostarcza wielu potrzebnych narzędzi do testowania, takich jak np. adnotacja @BeforeEach, która pozwala na wykonanie pewnych czynności przed uruchomieniem się każdego testu (np. stworzenie użytkownika/rezerwacji). JUnit daje również możliwość wykonywania asercji, czyli porównań wyników, np. aby sprawdzić, czy pożądany wynik jest rzeczywiście prawdziwy lub czy wyrzucony wyjątek jest taki jak oczekiwany. Jednakże w aplikacji użyto innego pakietu do asercji: assertj.core.api.Assertions.assertThat, ponieważ wyświetla czytelniejsze komunikaty błędów. W paczce jest również zawarta biblioteka ,,Mockito''. Biblioteka daje adnotacje @Mock oraz @InjectMocks, które ułatwiają i przyspieszają użycie mocków w testach, ponieważ nie trzeba samemu ich tworzyć i za każdym razem wstrzykiwać. Dostarcza również metodę \texttt{when} oraz metody \texttt{thenReturn} i \texttt{thenThrow}, które pozwalają określić, że przy danym działaniu funkcja powinna zwrócić dany wynik albo wykonać dane konkretne działanie. Obie części chodzą w parze: \texttt{when} określa, kiedy coś się stanie, a \texttt{thenReturn} (zwrócenie wyniku) lub \texttt{thenThrow} (zgłoszenie wyjątku) określa, że ma to być wynikowe działanie dla \texttt{when}. W aplikacji testami jednostkowymi objęto przede wszystkim warstwę serwisów: wykrywanie kolizji terminów rezerwacji, reguły dotyczące metod płatności dla gości i zalogowanych użytkowników, zmiany statusów rezerwacji oraz zgłaszanie wyjątków w przypadkach błędnych danych. Wszystkie przypadki testowe zestawiono w tabeli~\ref{tab:unit-tests}.
+
+\subsection{Testy integracyjne}
+W aplikacji szczególnie skupiono się na testach integracyjnych ze względu na charakter systemu, który łączy się z wieloma API oraz komunikuje się w metodach z wieloma komponentami serwisowymi na raz (np. rezerwacje z ofertami oraz fakturami). Paczka bibliotek ,,spring-boot-starter-test'' dostarcza również wiele bibliotek do przeprowadzenia testów integracyjnych. Jednakże jest też potrzebna biblioteka do testowania użytkowników wraz z tokenem JWT, autoryzacją i poziomami dostępu. Do tego użyto biblioteki ,,spring-security-test''. Kolejną potrzebną w tym etapie biblioteką jest \texttt{spring-boot-testcontainers}, która pozwala uruchomić bazę danych PostgreSQL w kontenerze Docker i automatycznie podłączyć ją do aplikacji na czas testów. Kontenerem jest wyłącznie baza danych; samą aplikację uruchamia Spring w ramach \texttt{@SpringBootTest}. Do wykonania testów integracyjnych wymagany jest działający Docker, natomiast nie trzeba ręcznie uruchamiać bazy ani aplikacji. Przy rozpoczęciu testów integracyjnych inicjalizowana jest klasa ,,AbstractIntegrationTest'', która używając \texttt{PostgreSQLContainer} tworzy testowy serwer bazy danych PostgreSQL. Następnie używana jest komenda \texttt{TRUNCATE TABLE users, products, product\_offers, reservations, invoice\_requests RESTART IDENTITY CASCADE}, która usuwa wszystkie dane z wymienionych tabel oraz tabel powiązanych z nimi kluczami obcymi i resetuje sekwencje identyfikatorów, aby stare dane nie powodowały sprzeczności z już istniejącymi. Ta komenda wykonuje się przed każdym testem. W tej klasie istnieją również metody oznaczone jako ,,protected'', czyli mające dostępność w obrębie tego samego pakietu lub w klasach dziedziczących. Klasy testowe dziedziczą po ,,AbstractIntegrationTest'', więc będą miały do tych metod dostęp. Jedna z nich tworzy użytkownika, a druga ofertę. Mają one na celu poprawienie czytelności oraz usprawnienie prędkości pisania testów, ponieważ będą użyte w wielu różnych klasach testowych odpowiadających za testowanie różnych aspektów aplikacji (np. autoryzacji i rezerwacji). Testy integracyjne obejmują trzy różne klasy. Pierwsza testuje przepływ danych podczas autentykacji oraz logowania użytkownika, druga rezerwacje, a trzecia poprawność przepływu webhooków i całej obsługi płatności. Ponownie testy zostały opisane w tabeli~\ref{tab:integration-tests}.
+
+
+\vspace*{-2.2cm}
+\begin{footnotesize}
+\setlength{\LTleft}{-1cm}
+\setlength{\LTright}{\fill}
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{|p{0.8cm}|p{6.2cm}|p{8.6cm}|p{1.7cm}|}
+\caption{Testy jednostkowe}\label{tab:unit-tests}\\
+\hline
+\textbf{ID} & \textbf{Krok} & \textbf{Oczekiwany wynik} & \textbf{Wynik} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Krok} & \textbf{Oczekiwany wynik} & \textbf{Wynik} \\ \hline
+\endhead
+\multicolumn{4}{|l|}{\textit{ReservationServiceTest}} \\ \hline
+J1 & Zalogowany użytkownik rezerwuje wolny termin & Zapis rezerwacji ze statusem \texttt{PENDING\_PAYMENT}, brak użycia repozytorium faktur & Zaliczony \\ \hline
+J2 & Rezerwacja z danymi faktury dla oferty z fakturami & Zapisane żądanie faktury powiązane z rezerwacją & Zaliczony \\ \hline
+J3 & Rezerwacja z fakturą dla oferty bez faktur & \texttt{InvoiceUnavailableException}, brak zapisu rezerwacji & Zaliczony \\ \hline
+J4 & Rezerwacja z terminem w przeszłości & \texttt{DateInThePastException}, brak wywołań repozytoriów & Zaliczony \\ \hline
+J5 & Termin nakłada się na istniejącą rezerwację & \texttt{DatesOverlappingException}, brak zapisu & Zaliczony \\ \hline
+J6 & Rezerwacja nieistniejącej oferty & \texttt{NoSuchElementException} & Zaliczony \\ \hline
+J7 & Rezerwacja gościa na wolny termin & Rezerwacja bez użytkownika, zapisany e-mail gościa, token UUID (36 znaków), wysłany link do płatności & Zaliczony \\ \hline
+J8 & Rezerwacja gościa na zajęty termin & \texttt{DatesOverlappingException}, e-mail nie zostaje wysłany & Zaliczony \\ \hline
+J9 & Właściciel produktu odwołuje rezerwację & Rezerwacja zostaje usunięta & Zaliczony \\ \hline
+J10 & Użytkownik niebędący właścicielem odwołuje rezerwację & \texttt{OwnershipViolationException}, rezerwacja nie jest usuwana & Zaliczony \\ \hline
+J11 & Usunięcie rezerwacji innego użytkownika & \texttt{NoSuchElementException}, brak usunięcia & Zaliczony \\ \hline
+J12 & Uruchomienie czyszczenia wygasłych rezerwacji & Repozytorium wywołane ze statusem \texttt{CONFIRMED} i bieżącym czasem & Zaliczony \\ \hline
+\multicolumn{4}{|l|}{\textit{InvoiceRequestServiceTest}} \\ \hline
+J13 & Utworzenie faktury dla oferty bez faktur & \texttt{InvoiceUnavailableException}, brak zapisu & Zaliczony \\ \hline
+J14 & Właściciel oznacza zażądaną fakturę jako wystawioną & Status \texttt{ISSUED}, ustawiona data wystawienia & Zaliczony \\ \hline
+J15 & Właściciel ponownie oznacza wystawioną fakturę & Powrót do statusu \texttt{REQUESTED}, data wystawienia wyczyszczona & Zaliczony \\ \hline
+J16 & Zmiana statusu faktury przez nie-właściciela & \texttt{OwnershipViolationException}, status bez zmian & Zaliczony \\ \hline
+\multicolumn{4}{|l|}{\textit{StripePaymentServiceTest}} \\ \hline
+J17 & Utworzenie płatności dla rezerwacji o cenie 79,99 & Kwota 7999 groszy, waluta \texttt{pln}, metadane z \texttt{reservationId}, identyfikator zapisany w rezerwacji & Zaliczony \\ \hline
+J18 & Utworzenie płatności, gdy istnieje aktywny intent & Intent zostaje użyty ponownie, nowy nie jest tworzony & Zaliczony \\ \hline
+J19 & Utworzenie płatności, gdy poprzedni intent jest anulowany & Utworzony nowy intent, jego identyfikator zapisany w rezerwacji & Zaliczony \\ \hline
+J20 & Płatność za rezerwację już opłaconą & \texttt{IllegalStateException} & Zaliczony \\ \hline
+J21 & Płatność za rezerwację innego użytkownika & \texttt{NoSuchElementException} & Zaliczony \\ \hline
+J22 & Płatność gościa z błędnym tokenem & \texttt{NoSuchElementException} & Zaliczony \\ \hline
+J23 & Płatność gościa po upływie okna płatności & \texttt{IllegalStateException}, brak komunikacji ze Stripe & Zaliczony \\ \hline
+J24 & Płatność gościa z poprawnym tokenem & Utworzony intent, identyfikator zapisany w rezerwacji & Zaliczony \\ \hline
+J25 & Potwierdzenie opłaconej rezerwacji & Status \texttt{CONFIRMED}, wyczyszczony termin płatności, wysłany e-mail z potwierdzeniem & Zaliczony \\ \hline
+J26 & Potwierdzenie płatności dla rezerwacji anulowanej & Status bez zmian, e-mail nie zostaje wysłany & Zaliczony \\ \hline
+\end{longtable}
+\end{footnotesize}
+
+\newpage
+\begin{footnotesize}
+\setlength{\LTleft}{\fill}
+\setlength{\LTright}{\fill}
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{|p{0.8cm}|p{5.2cm}|p{7.6cm}|p{1.7cm}|}
+\caption{Testy integracyjne}\label{tab:integration-tests}\\
+\hline
+\textbf{ID} & \textbf{Krok} & \textbf{Oczekiwany wynik} & \textbf{Wynik} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Krok} & \textbf{Oczekiwany wynik} & \textbf{Wynik} \\ \hline
+\endhead
+\multicolumn{4}{|l|}{\textit{AuthFlowIntegrationTest}} \\ \hline
+I1 & Rejestracja, logowanie i wywołanie chronionego endpointu wydanym tokenem & Hasło zapisane jako skrót, logowanie zwraca e-mail, rolę \texttt{USER} i token, endpoint z tokenem zwraca status 200 & Zaliczony \\ \hline
+I2 & Rejestracja na zajęty adres e-mail & Status 400, w bazie pozostaje jeden użytkownik & Zaliczony \\ \hline
+I3 & Logowanie z błędnym hasłem & Status 401, komunikat \texttt{Bad credentials} & Zaliczony \\ \hline
+I4 & Chroniony endpoint bez tokenu i z fałszywym tokenem & Status 401 w obu przypadkach & Zaliczony \\ \hline
+\multicolumn{4}{|l|}{\textit{ReservationFlowIntegrationTest}} \\ \hline
+I5 & Użytkownik tworzy rezerwację & Status 200, rezerwacja zapisana w bazie ze statusem \texttt{PENDING\_PAYMENT} i terminem płatności za około 15 minut & Zaliczony \\ \hline
+I6 & Rezerwacja z danymi faktury & Status 200, żądanie faktury zapisane w bazie & Zaliczony \\ \hline
+I7 & Rezerwacja nakładająca się na istniejącą oraz rezerwacja bezpośrednio po niej & Nakładająca się: status 409, następna: status 200, w bazie dwie rezerwacje & Zaliczony \\ \hline
+I8 & Rezerwacja z terminem w przeszłości & Status 403, brak rezerwacji w bazie & Zaliczony \\ \hline
+I9 & Rezerwacja bez tokenu & Status 401 & Zaliczony \\ \hline
+I10 & Rezerwacja gościa bez logowania & Status 200, rezerwacja z tokenem płatności w bazie, e-mail z linkiem zawierającym token & Zaliczony \\ \hline
+I11 & Odwołanie rezerwacji przez obcego usługodawcę, a potem przez właściciela & Obcy: status 409 i rezerwacja pozostaje, właściciel: status 200 i rezerwacja usunięta & Zaliczony \\ \hline
+I12 & Czyszczenie wygasłych rezerwacji & Usunięta tylko wygasła rezerwacja kartą, pozostałe (gotówka, potwierdzona, jeszcze płatna) zachowane, brak e-maili & Zaliczony \\ \hline
+\multicolumn{4}{|l|}{\textit{StripeWebhookIntegrationTest}} \\ \hline
+I13 & Webhook \texttt{payment\_intent.succeeded} z poprawnym podpisem & Status 200, rezerwacja \texttt{CONFIRMED}, wyczyszczony termin płatności, e-mail do klienta & Zaliczony \\ \hline
+I14 & Webhook z niepoprawnym podpisem & Status 400, rezerwacja nadal \texttt{PENDING\_PAYMENT}, brak e-maila & Zaliczony \\ \hline
+I15 & Webhook z treścią zmienioną po podpisaniu & Status 400, rezerwacja bez zmian & Zaliczony \\ \hline
+I16 & Webhook bez \texttt{reservationId} w metadanych & Status 400, komunikat \texttt{Missing reservationId metadata} & Zaliczony \\ \hline
+\end{longtable}
+\end{footnotesize}
+
+
+\section{Nominatim i proces geokodowania}
+Nominatim jest silnikiem geokodowania\footnote{Geokodowanie jest to przypisanie współrzędnych geograficznych (długość, szerokość) danemu obiektowi z podanych danych adresowych. Dane te muszą znaleźć się w odpowiednich kolumnach (państwo, miasto, ulica, numer, kod pocztowy).} opartym na OpenStreetMap. OpenStreetMap jest to mapa tworzona i utrzymywana przez społeczność, mająca na celu zachowanie danych i prawdziwości map. W aplikacji jest używany w celu zmiany danych adresu wpisanego przez użytkownika na współrzędne geograficzne. Następnie frontend, korzystając z map OpenStreetMap, wyświetla interaktywną mapę ze znacznikami dostępnych usług. Poza tym jest dostępny endpoint GET locations/cities, który wysyłając żądanie do serwisu Nominatim zwraca listę miast o nazwie wprowadzonej przez użytkownika. Po wybraniu miasta w filtrze usługi są wyświetlane ponownie, tym razem tylko te dostępne w tym mieście, tak samo jak i na interaktywnej mapie (którą trzeba zainicjalizować klikając przycisk ,,Pokaż mapę''). Do obsługi i wyświetlenia mapy jest używana biblioteka Leaflet, która daje możliwość wyświetlenia nowoczesnej mapy z funkcjami np. przybliżania. Nominatim to projekt OpenSource, więc jest darmowy, głównie dlatego zdecydowano się go użyć w aplikacji. Dla porównania, Google Geocoding API oferuje tylko 10 000 darmowych żądań, a kolejne są już płatne. Cennik można znaleźć pod tym adresem \url{https://developers.google.com/maps/billing-and-pricing/pricing#places-pricing}. Do używania publicznego API Nominatim potrzebny jest tzw. UserAgent, który w kodzie aplikacji trzeba podać, aby zidentyfikować aplikację, oraz kontakt email. Warto zaznaczyć, że limit użycia Nominatim to 1 żądanie na sekundę. W aplikacji użycie Nominatim występuje podczas tworzenia ogłoszenia. Użytkownik, który posiada dostęp do tworzenia ogłoszenia, po wpisaniu istniejącego adresu, i następnie po kliknięciu przycisku "Dodaj ogłoszenie", tworzy ogłoszenie. Wysyłane jest w tym momencie żądanie do serwera do kontrolera, który sprawdza czy użytkownik jest zalogowany i ma dostęp do tworzenia ogłoszeń, po czym kontroler odwołuje się do serwisu odpowiadającego za obsługę metod związanych z ogłoszeniami, a konkretnie do metody ,,addProduct()''. W tej metodzie następuje komunikacja z NominatimService, który wysyła żądanie do API Nominatim, w celu zamienienia adresu ogłoszenia na współrzędne geograficzne. Współrzędne wracają do serwera w formacie JSON, a dalej są zapisywane do bazy danych w polach dołączonych do ogłoszenia. W przypadku wpisania nieprawidłowego adresu, albo adresu który nie został odnaleziony, geokodowanie nie zwróci żadnych współrzędnych geograficznych, co za tym idzie nie zostaną one zapisane w bazie. Na końcu całe ogłoszenie jest zapisywane do bazy danych, zważając wcześniej na poprawność walidacji danych. Diagram całego przebiegu znajduje się poniżej. Drugim przypadkiem użycia Nominatim w aplikacji jest wyszukiwarka miast. Użytkownik w panelu listy ogłoszeń, ma dostęp do wielu filtrów pozwalających na znalezienie odpowiedniego ogłoszenia. Jednym z nich jest filtr miast. Podczas wpisania nazwy miasta, gdy użytkownik przestanie ją wpisywać na 3 sekundy jest wyszukiwana lista maksymalnie 10 miast o podanej nazwie, wyświetlona za pomocą skomunikowania się z endpointem w backendzie odpowiedzialnym za komunikację z zewnętrznym serwisem Nominatim. Metoda serwisowa, buduje URL na podstawie otrzymanej nazwy miasta, który przykładowo wygląda tak: \url{https://nominatim.openstreetmap.org/search?q=Olsztyn&format=jsonv2&featureType=city&limit=10&accept-language=pl}. URL zawiera informacje takie jak, nazwa miasta, format danych, limit miast, które mogą się wyświetlić (w celu poprawienia sprawności aplikacji), oraz język w którym wyszukiwane jest miasto. API zwraca listę miast w formacie JSON z danymi takimi jak np. współrzędne geograficzne, nazwa oraz wyświetlana nazwa. Wyświetlana nazwa zawiera również województwo, kraj lub powiat. Użytkownik klikając w dane miasto wysyła kolejne żądanie do backendu, który zwraca listę ogłoszeń w tym mieście wraz z użyciem paginacji.
+
+\begin{figure}[H]
+    \includegraphics[trim=0mm 0mm 0mm 0.5cm, clip,
+                     width=1\linewidth, height=1.35\textheight, keepaspectratio]{nominatim.pdf}
+    \caption{Diagram przepływu geokodowania adresu podczas tworzenia ogłoszenia}
+    \label{fig:nominatim}
+\end{figure}
+
+
+\newpage
+\section{Detale techniczne aplikacji}
+\subsection{JpaSpecificationExecutor}
+\texttt{JpaSpecificationExecutor} jest to wbudowany interfejs w Spring Data JPA, pozwalający na tzw. dynamiczne wywoływanie zapytań do bazy. Polega na budowaniu warunków wyszukiwania w czasie rzeczywistym. Pozwala składać warunki filtrowania, w zależności od kryteriów wybranych przez użytkownika, bez konieczności implementacji osobnej metody repozytorium dla każdej kombinacji filtrów. W klasie definiującej metody filtrowania używa się interfejsu \texttt{Specification}. Interfejs ten posiada jedną kluczową metodę wyglądającą tak:
+
+\begin{lstlisting}[language=Java]
+Predicate toPredicate(Root<T> root,
+                      CriteriaQuery<?> query,
+                      CriteriaBuilder cb);
+\end{lstlisting}
+
+\begin{enumerate}
+    \item \texttt{Root<T>} – encja, z której pobierane są dane (odpowiednik \texttt{FROM}), po nim odwołujemy się do pól. Inaczej jest używany do określenia, w jakiej tabeli będą wyszukiwane dane.
+    \item \texttt{CriteriaQuery} – reprezentuje budowane całe zapytanie do bazy danych, zapisane nie w postaci zapytania np. SQL, ale w postaci obiektu. Budowanie obiektu zamiast czystego zapytania SQL daje kilka korzyści. Pierwszą z nich jest to, że błędy w budowie zapytania są wykrywane już na etapie kompilacji, a nie dopiero w trakcie działania aplikacji, jak w przypadku zapytania zapisanego jako ciąg znaków. Drugą korzyścią jest ochrona przed SQL injection. W przypadku gdy zapytanie do bazy danych było reprezentowane w postaci ciągu znaków, ktoś mógłby zmienić zapytanie w niestandardowy sposób, wpisując odpowiednie znaki.
+    \item \texttt{CriteriaBuilder} – obiekt zawierający metody, które odpowiadają operatorom i funkcjom SQL (\texttt{cb.equal} $\rightarrow$ \texttt{=}, \texttt{cb.like} $\rightarrow$ \texttt{LIKE}, \texttt{cb.and} $\rightarrow$ \texttt{AND}, \texttt{cb.or} $\rightarrow$ \texttt{OR}, \texttt{cb.lessThan} $\rightarrow$ \texttt{<}). Służy do budowania warunków zapytania.
+\end{enumerate}
+
+Za przykład takiej metody może posłużyć poniższy kod:
+
+\begin{lstlisting}[language=Java]
+Specification<Service> hasCategory =
+    (root, query, cb) -> cb.equal(root.get("category"), "MASSAGE");
+\end{lstlisting}
+
+Gdzie \texttt{Service} to klasa encji, dla której wykonywane będzie zapytanie. Parametry: \texttt{root}, \texttt{query}, \texttt{cb} – odpowiadają wcześniej opisanym: \texttt{Root}, \texttt{CriteriaQuery} oraz \texttt{CriteriaBuilder}. Metoda wyszukuje wszystkie rekordy, w których wartość w kolumnie \texttt{category} jest równa słowu \texttt{MASSAGE}.
+
+\newpage
+\subsection{Zabezpieczenia}
+Każdy endpoint w aplikacji jest oznaczony odpowiednimi adnotacjami zabezpieczającymi go przed wykorzystaniem przez nieupoważnione osoby. Przykładami takich adnotacji są: @PreAuthorize("hasAuthority('USER')"), która dopuszcza tylko zalogowanych użytkowników o uprawnieniach \texttt{USER}, oraz \texttt{@PermitAll}, która oznacza dopuszczenie całego ruchu sieciowego do tego endpointu. Ponadto dodatkowym zabezpieczeniem jest klasa \texttt{SecurityConfig}, która filtruje zapytania otrzymywane od klienta lub z zewnątrz i na podstawie zdefiniowanych w niej wytycznych określa, czy zapytanie na dany endpoint jest dla niego dopuszczalne. Jeżeli zapytanie nie posiada wystarczających uprawnień, czyli np. nie zawiera prawidłowego tokenu JWT, to filtr je odrzuca. Takie działanie zapewnia metoda \texttt{securityFilterChain}, w której te zasady są zdefiniowane.
+
+\vspace{5mm}
+
+Kolejnym zabezpieczeniem w aplikacji jest tzw. CORS\cite{CORSdefinicja}. ,,CORS to skrót od Cross-Origin Resource Sharing, czyli mechanizmu umożliwiającego bezpieczny dostęp do zasobów między różnymi źródłami. Oznacza to, że strona internetowa może załadować zasoby (np. skrypty, obrazy czy style CSS) z innej domeny, ale tylko wtedy, gdy ta domena wyrazi na to zgodę''. W klasie konfiguracyjnej Spring definiujemy adresy URL, które będą mogły się kontaktować z serwerem. W aplikacji jest to \texttt{http://localhost:5173}, ze względu na to, że aplikacja na tym etapie jest dostępna tylko lokalnie, a klient działający na Vite jest skonfigurowany na tym adresie. Ponadto klasa pozwala również na określenie, jakie typy żądań mogą wysyłać do serwera wskazane wcześniej adresy URL, jak również jakie nagłówki. W aplikacji pozwolenie otrzymały typy: \texttt{GET}, \texttt{POST}, \texttt{PUT}, \texttt{DELETE}, \texttt{PATCH}, \texttt{OPTIONS}, oraz nagłówki: \texttt{Authorization}, \texttt{Content-Type}, \texttt{Accept}, \texttt{Origin}, \texttt{X-XSRF-TOKEN}, \texttt{X-CSRF-TOKEN}. Nagłówek \texttt{Authorization} przenosi token JWT, \texttt{Origin} zawiera adres, z którego wysyłane jest żądanie (na jego podstawie przeglądarka i serwer weryfikują CORS), a dwa ostatnie przenoszą token CSRF, służący do ochrony przed atakami typu Cross-Site Request Forgery.
+
+
+
+\newpage
+\subsection{Tabela kluczowych endpointów}
+\begin{longtable}{|p{1.8cm}|p{5.6cm}|p{2.2cm}|p{5.0cm}|}
+\caption{Kluczowe endpointy aplikacji} \label{tab:endpointy_kluczowe} \\
+\hline
+\textbf{Metoda} & \textbf{Endpoint} & \textbf{Rola} & \textbf{Opis} \\ \hline
+\endfirsthead
+\hline
+\textbf{Metoda} & \textbf{Endpoint} & \textbf{Rola} & \textbf{Opis} \\ \hline
+\endhead
+
+\multicolumn{4}{|l|}{\textit{auth-controller}} \\ \hline
+POST & \texttt{/auth/signin} & GOŚĆ & Logowanie użytkownika, zwraca token JWT \\ \hline
+POST & \texttt{/auth/register} & GOŚĆ & Rejestracja nowego użytkownika \\ \hline
+
+\multicolumn{4}{|l|}{\textit{product-controller}} \\ \hline
+GET & \texttt{/products} & GOŚĆ & Pobranie listy produktów (usług) z filtrowaniem \\ \hline
+POST & \texttt{/products} & PROVIDER & Dodanie nowego produktu \\ \hline
+GET & \texttt{/products/\{productId\}} & GOŚĆ & Pobranie szczegółów wybranego produktu \\ \hline
+PATCH & \texttt{/products/\{productId\}} & PROVIDER & Częściowa edycja produktu \\ \hline
+DELETE & \texttt{/products/\{productId\}} & PROVIDER & Usunięcie produktu \\ \hline
+GET & \texttt{/products/my-products} & PROVIDER & Pobranie produktów należących do zalogowanego użytkownika \\ \hline
+
+\multicolumn{4}{|l|}{\textit{product-offer-controller}} \\ \hline
+POST & \texttt{/offers/\{productId\}} & PROVIDER & Dodanie oferty do wskazanego produktu \\ \hline
+GET & \texttt{/offers/\{offerId\}} & GOŚĆ & Pobranie szczegółów oferty \\ \hline
+PUT & \texttt{/offers/\{offerId\}} & PROVIDER & Edycja oferty \\ \hline
+DELETE & \texttt{/offers/\{offerId\}} & PROVIDER & Usunięcie oferty \\ \hline
+
+\multicolumn{4}{|l|}{\textit{reservation-controller}} \\ \hline
+POST & \texttt{/reservations} & USER & Utworzenie rezerwacji przez zalogowanego użytkownika \\ \hline
+POST & \texttt{/reservations/guest} & GOŚĆ & Utworzenie rezerwacji przez gościa (bez konta) \\ \hline
+GET & \texttt{/reservations/\{offerId\}} & GOŚĆ & Pobranie terminów rezerwacji dla danej oferty \\ \hline
+GET & \texttt{/reservations/\allowbreak my-reservations} & USER & Pobranie rezerwacji zalogowanego użytkownika \\ \hline
+GET & \texttt{/reservations/\allowbreak by-product/\{productId\}} & PROVIDER & Pobranie rezerwacji dla wskazanego produktu \\ \hline
+DELETE & \texttt{/reservations\allowbreak /cancel/\{reservationId\}} & USER & Anulowanie rezerwacji przez klienta \\ \hline
+DELETE & \texttt{/reservations\allowbreak /revoke/\{reservationId\}} & PROVIDER & Odwołanie rezerwacji przez właściciela produktu \\ \hline
+\end{longtable}
+Tabela przedstawia najważniejsze endpointy aplikacji, z pominięciem tych związanych ze Stripe, fakturami, kategoriami oraz nominatim. Ze względu na to, że ich proces wcześniej został szczegółowo opisany, lub są mało istotne.
+
+
+
+
+\chapter{Instrukcja obsługi}
+\section{Instrukcja uruchomienia aplikacji}
+
+\subsection{Wymagania wstępne}
+Do uruchomienia aplikacji niezbędne są następujące narzędzia:
+\begin{itemize}
+    \item \textbf{Docker} oraz \textbf{Docker Compose}
+    \item \textbf{Git} do pobrania kodu źródłowego,
+    \item darmowe konto w serwisie \textbf{Stripe} wraz z narzędziem \textbf{Stripe CLI} (do obsługi płatności),
+    \item konto pocztowe umożliwiające wysyłanie wiadomości przez SMTP (np. Gmail), jeśli mają być wysyłane powiadomienia e-mail.
+    \item \textbf{Node.js} (wraz z menedżerem pakietów \textbf{npm}) do uruchomienia aplikacji klienckiej,
+\end{itemize}
+Aplikacja działa w kontenerach, więc nie jest wymagana lokalna instalacja Javy, ani bazy danych.  Aplikacja kliencka uruchamiana jest lokalnie i wymaga środowiska Node.js.
+
+\subsection{Pobranie kodu źródłowego}
+Należy pobrać kod serwera:
+\begin{lstlisting}[language=bash]
+git clone https://github.com/Barcik04/diploma_thesis
+cd diploma_thesis
+git checkout final
+\end{lstlisting}
+Repozytorium na github jest prywatne, przed klonowaniem należy się skontaktować z twórcą aplikacji Igorem Barcikowskim, email: Igor.bb00@gmail.com, w celu nadania dostępu. Backend w github jest na branch ,,final'', a kod kliencki na branch ,,frontend''.
+
+\subsection{Konfiguracja zmiennych środowiskowych}
+Konfiguracja aplikacji (hasła, klucze API, sekrety) znajduje się w pliku \texttt{.env}. Plik ten nie jest dołączony do repozytorium, ponieważ zawiera dane uwierzytelniające, których nie należy publikować. W repozytorium znajduje się natomiast plik wzorcowy \texttt{.env.example}, który należy skopiować do nowostworzonego pliku .env i go uzupełnić.
+
+
+\begin{longtable}{|p{5.6cm}|p{9.4cm}|}
+\caption{Zmienne środowiskowe aplikacji} \label{tab:env} \\
+\hline
+\textbf{Zmienna} & \textbf{Opis} \\ \hline
+\endfirsthead
+\hline
+\textbf{Zmienna} & \textbf{Opis} \\ \hline
+\endhead
+\texttt{POSTGRES\_DB} & Nazwa bazy danych tworzonej w kontenerze PostgreSQL \\ \hline
+\texttt{POSTGRES\_USER} & Nazwa użytkownika bazy danych \\ \hline
+\texttt{POSTGRES\_PASSWORD} & Hasło użytkownika bazy danych \\ \hline
+\texttt{SPRING\_DATASOURCE\_URL} & Adres JDBC bazy danych używany przez aplikację (host \texttt{db} to nazwa usługi w Docker Compose) \\ \hline
+\texttt{SPRING\_DATASOURCE\_USERNAME} & Nazwa użytkownika, którym aplikacja łączy się z bazą (musi odpowiadać \texttt{POSTGRES\_USER}) \\ \hline
+\texttt{SPRING\_DATASOURCE\_PASSWORD} & Hasło, którym aplikacja łączy się z bazą (musi odpowiadać \texttt{POSTGRES\_PASSWORD}) \\ \hline
+\texttt{JWT\_SECRET} & Sekret do podpisywania tokenów JWT, długi losowy ciąg znaków \\ \hline
+\texttt{MAIL\_USERNAME} & Adres konta pocztowego, z którego wysyłane są wiadomości \\ \hline
+\texttt{MAIL\_PASSWORD} & Hasło aplikacji do konta pocztowego (nie zwykłe hasło do konta) \\ \hline
+\texttt{STRIPE\_SECRET\_KEY} & Tajny klucz API Stripe w trybie testowym (\texttt{sk\_test\_...}) \\ \hline
+\texttt{STRIPE\_WEBHOOK\_SECRET} & Sekret podpisu webhooka Stripe (\texttt{whsec\_...}) \\ \hline
+\end{longtable}
+
+\subsubsection{Sekret JWT}
+Sekret można wygenerować poleceniem:
+\begin{lstlisting}[language=bash]
+openssl rand -base64 48
+\end{lstlisting}
+Uzyskaną wartość należy wpisać do zmiennej \texttt{JWT\_SECRET}.
+
+\subsubsection{Konfiguracja Stripe}
+Płatności w aplikacji obsługuje serwis Stripe. Na potrzeby uruchomienia lokalnego wystarczy konto w trybie testowym, które nie wymaga podawania danych firmy ani realnych środków:
+\begin{enumerate}
+    \item Należy założyć darmowe konto na stronie \texttt{stripe.com} i włączyć tryb testowy (\textit{Test mode}).
+    \item W panelu Stripe, w sekcji kluczy API (\textit{Developers $\rightarrow$ API keys}), należy skopiować klucz tajny (\texttt{sk\_test\_...}) i wpisać go do zmiennej \texttt{STRIPE\_SECRET\_KEY}.
+\end{enumerate}
+
+\subsubsection{Webhook Stripe w środowisku lokalnym}
+Stripe informuje aplikację o statusie płatności za pomocą webhooka, czyli żądania HTTP wysyłanego na endpoint \texttt{/payments/webhook}. Serwery Stripe nie mają dostępu do adresu \texttt{localhost}, dlatego w środowisku lokalnym wykorzystuje się narzędzie Stripe CLI, które odbiera zdarzenia ze Stripe i przekazuje je do aplikacji. Środowisko jest inicjalizowane przy starcie kontenera, używając przy tym STRIPE\_SECRET\_KEY, automatycznie nawiązując połączenie z środowiskiem testowym Stripe użytkownika.
+
+
+Do poprawnej weryfikacji podpisu webhooka aplikacja potrzebuje sekretu \texttt{whsec\_...}. Jest to sekret generowany przez narzędzie Stripe CLI, które w projekcie działa w osobnym kontenerze (\texttt{stripe-cli}). Sekret jest wypisywany w logach kontenera \texttt{stripe-cli} przy jego uruchomieniu, dlatego konfigurację należy wykonać w następujących krokach:
+\begin{enumerate}
+    \item Uzupełnić w pliku \texttt{.env} zmienną \texttt{STRIPE\_SECRET\_KEY}, a w zmiennej \texttt{STRIPE\_WEBHOOK\_SECRET} wpisać wartość tymczasową.
+    \item Uruchomić aplikację poleceniem:
+\begin{lstlisting}[language=bash]
+docker compose up --build
+\end{lstlisting}
+    \item Odczytać sekret webhooka z logów kontenera \texttt{stripe-cli}:
+\begin{lstlisting}[language=bash]
+docker compose logs stripe-cli
+\end{lstlisting}
+    W logach pojawi się komunikat zawierający wartość w postaci \texttt{whsec\_...}.
+    \item Wpisać odczytany sekret do zmiennej \texttt{STRIPE\_WEBHOOK\_SECRET} w pliku \texttt{.env}.
+    \item Zrestartować kontener aplikacji, aby wczytał nową wartość:
+\begin{lstlisting}[language=bash]
+docker compose up -d --force-recreate app
+\end{lstlisting}
+\end{enumerate}
+Sekret jest wypisywany w logach przy każdym uruchomieniu kontenera \texttt{stripe-cli}, dlatego w razie potrzeby można go ponownie odczytać tym samym poleceniem. Po wykonaniu powyższych kroków webhook działa poprawnie, a aplikacja otrzymuje informacje o opłaconych płatnościach.
+
+
+
+
+
+
+\subsection{Środowisko VS Code (aplikacja kliencka)}
+Aplikacja kliencka uruchamiana jest lokalnie, najwygodniej w edytorze \textbf{Visual Studio Code}. Przed rozpoczęciem należy uruchomić serwer zgodnie z poprzednimi punktami (\texttt{docker compose up --build}), ponieważ aplikacja kliencka komunikuje się z API pod adresem \newline\texttt{http://localhost:8080}.
+
+\subsubsection{Pobranie kodu aplikacji klienckiej}
+Kod klienta znajduje się w tym samym repozytorium, na gałęzi \texttt{frontend}. Najlepiej sklonować go do osobnego katalogu:
+\begin{lstlisting}[language=bash]
+git clone https://github.com/Barcik04/diploma_thesis
+cd diploma_thesis
+git checkout frontend
+\end{lstlisting}
+
+\subsubsection{Instalacja zależności}
+W terminalu, w głównym katalogu projektu klienckiego, należy wykonać:
+\begin{lstlisting}[language=bash]
+npm install
+\end{lstlisting}
+Polecenie pobiera biblioteki wymienione w pliku \texttt{package.json} (m.in. React, React Router, biblioteki Stripe i Leaflet) do katalogu \texttt{node\_modules}. Wykonuje się je przy pierwszym uruchomieniu oraz po zmianie zależności.
+
+\subsubsection{Konfiguracja klucza publicznego Stripe}
+Aplikacja kliencka wymaga własnego pliku \texttt{.env}, umieszczonego w głównym katalogu projektu klienckiego (obok pliku \texttt{package.json}). Plik ten nie jest dołączony do repozytorium. Należy go utworzyć i wpisać do niego klucz publiczny Stripe:
+\begin{enumerate}
+    \item Zalogować się do panelu Stripe i upewnić się, że włączony jest tryb testowy (\textit{Test mode} / \textit{Sandbox}).
+    \item W sekcji kluczy API (\textit{Developers $\rightarrow$ API keys}) skopiować klucz publiczny (\textit{Publishable key}, \texttt{pk\_test\_...}).
+    \item W katalogu projektu klienckiego utworzyć plik \texttt{.env} o następującej zawartości:
+\begin{lstlisting}[language=bash]
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+\end{lstlisting}
+\end{enumerate}
+Vite udostępnia aplikacji wyłącznie zmienne z prefiksem \texttt{VITE\_}. Klucz publiczny służy tylko do inicjalizacji formularza płatności, a klucz tajny pozostaje na serwerze. Klucz publiczny musi pochodzić z tego samego konta i trybu Stripe co klucz tajny (\texttt{STRIPE\_SECRET\_KEY}) użyty w serwerze, w przeciwnym razie płatność nie powiedzie się.
+
+\subsubsection{Uruchomienie aplikacji klienckiej}
+\begin{lstlisting}[language=bash]
+npm run dev
+\end{lstlisting}
+Po uruchomieniu aplikacja jest dostępna pod adresem \texttt{http://localhost:5173}.
+
+
+
+
+
+
+\newpage
+\subsubsection{Konfiguracja poczty}
+Aplikacja wysyła wiadomości e-mail przez protokół SMTP. W przypadku konta Gmail należy włączyć weryfikację dwuetapową, a następnie wygenerować \textit{hasło aplikacji} i wpisać je do zmiennej \texttt{MAIL\_PASSWORD}. Nie należy używać zwykłego hasła do konta. Jeżeli dane poczty nie zostaną skonfigurowane, aplikacja uruchomi się, ale wiadomości e-mail nie będą wysyłane.
+
+\subsection{Uruchomienie}
+Po uzupełnieniu pliku \texttt{.env} aplikację uruchamia się jednym poleceniem z katalogu głównego projektu:
+\begin{lstlisting}[language=bash]
+docker compose up --build
+\end{lstlisting}
+Przy pierwszym uruchomieniu zostaną pobrane obrazy i zbudowane kontenery, co może zająć kilka minut. Po zakończeniu aplikacja jest dostępna pod adresami:
+\begin{itemize}
+    \item aplikacja kliencka: \texttt{http://localhost:5173},
+    \item API serwera: \texttt{http://localhost:8080},
+    \item dokumentacja API (Swagger): \texttt{http://localhost:8080/swagger-ui.html}.
+\end{itemize}
+
+\subsection{Testowanie płatności}
+W trybie testowym Stripe nie są pobierane prawdziwe środki. Do opłacenia rezerwacji można użyć testowej karty \texttt{4242 4242 4242 4242} z dowolną przyszłą datą ważności i dowolnym kodem CVC. Po poprawnym opłaceniu Stripe CLI wyświetli w terminalu przekazane zdarzenie, a aplikacja zaktualizuje status płatności.
+
+\subsection{Zatrzymanie aplikacji}
+\begin{lstlisting}[language=bash]
+docker compose down        # zatrzymanie kontenerow
+docker compose down -v     # zatrzymanie i usuniecie danych bazy
+\end{lstlisting}
+
+\subsection{Uwagi dotyczące bezpieczeństwa}
+Plik \texttt{.env} został dodany do \texttt{.gitignore} i nie powinien być publikowany ani przesyłany razem z kodem. Klucze zawarte w pliku \texttt{.env.example} są jedynie wartościami przykładowymi. Przed wdrożeniem aplikacji w środowisku produkcyjnym należy wygenerować nowe sekrety, zastąpić klucze testowe Stripe kluczami produkcyjnymi oraz zmienić adres dozwolony w konfiguracji CORS na docelową domenę.
+
+
+\newpage
+\chapter{Frontend}
+\section{Technologia}
+React 19 + TypeScript, Vite, react-router-dom 7, Stripe (stripe-js, react-stripe-js), Leaflet do wyświetlania mapy. Aplikacja działa w architekturze SPA\footnote{Single-page application (SPA) to aplikacja webowa, która działa w ramach jednego dokumentu HTML i zamiast przeładowywać całą stronę przy każdej akcji użytkownika, dynamicznie aktualizuje tylko wybrane elementy interfejsu, treść i inne dane. Dzięki temu pracuje o wiele płynniej i szybciej}, która komunikuje się z backendem za pomocą REST/JSON. Aplikację zaimplementowano w React z użyciem TypeScript, który dzięki statycznemu typowaniu pozwala wykrywać błędy już na etapie kompilacji, oraz narzędzia Vite, które zapewnia szybkie budowanie się serwera.
+
+\section{Struktura projektu}
+Projekt jest rozdzielony na foldery, które oddzielają odpowiedzialności w aplikacji. W podfolderze ,,api'' znajdują się pliki TypeScript, które posiadają logikę metod wywołujących endpointy z backendu. Przykładem tych metod jest np. metoda login, która komunikuje się z endpointem odpowiedzialnym za obsługę logowania i wydawania tokenu JWT użytkownikom. Sam token JWT w tej metodzie - po otrzymaniu go od serwera, zostaje zapisany w schowku lokalnym (localstorage) po stronie klienta. W taki sposób jest on zapisany w przeglądarce użytkownika niżeli w aplikacji. Przy wylogowaniu, token się usuwa ze schowka. Metody mają też obsługę błędów przy np. błędnym wpisaniu hasła przez użytkownika, komunikując go odpowiednią wiadomością, która w przypadku metody login brzmi następująco: ,,Nieprawidłowy email lub hasło''. Korzyścią takiego rozdzielenia metod endpointów od kodu stron, poprawia skalowalność i łatwość późniejszego wprowadzania poprawek. W wielu przypadkach ta sama metoda jest wywoływana w wielu komponentach aplikacji przez co, gdyby nie wcześniej opisana rozdzielność zadań, programista musiałby szukać i zmieniać metodę w każdym miejscu jej występowania. 
+\vspace{5mm}
+Kolejnymi plikami rozdzielonymi od innych są tzw. komponenty funkcyjne, czyli fragmenty interfejsu JSX, który jest wykorzystywany w wielu różnych miejscach aplikacji. Umieszono je w katalogu ,,components''. Przykładem komponentu może być występujący w prawie każdej współczesnej aplikacji webowej navbar, czyli inaczej pasek nawigacji. W aplikacji jest on wyświetlany u góry strony, mając kilka przycisków przekierowujących użytkownika na profil użytkownika lub do strony głównej aplikacji. Poza tym występują tam przyciski które wyświetlają formularz rejestracji lub logowania użytkownika. Występuje również nieco bardziej skomplikowany komponent komunikujący się z Stripe API za pomocą biblioteki Stripe. Renderuje on formularz płatności kartą oraz obsługuje wysłanie płatności do Stripe.
+\vspace{5mm}
+Następnie istnieje katalog page, który przechowuje kod html generujący wygląd i interakcje na stronie, jak również wywołuje metody zaimplementowane w katalogu api. W środku istnieją funkcje definiujące co ma się stać np. po kliknięciu przez użytkownika danego przycisku. 
+\vspace{5mm}
+Istnieją również dwa ostatnie katalogi, odpowiadające za wizualny wygląd aplikacji. Są to katalogi: ,,styles'' i ,,photos''. Pierwszy przechowuje kod css, odpowiadający za wygląd, kolor wielkość i animacje w aplikacji, ale również za dopasowanie wielkości strony do wielkości ekranu, na którym jest wyświetlana aplikacja. Robi to za pomocą adnotacji @media, w której opisuje się zasady w przypadku gdy strona będzie mniejsza niż określona ilość pikseli. Drugim folderem jest folder przechowujący zdjęcia i ikony. Nie są to zdjęcia wstawione przez użytkownika podczas tworzenia ogłoszenia, lecz zdjęcia które na stałe widnieją w aplikacji. Np. ikona domu reprezentującego powrót do strony głównej po jej kliknięciu. 
+\vspace{5mm}
+W katalogu głównym ,,src'' istnieją jeszcze dwie ważne klasy odpowiadające za nawigację i Routing. Definiują one, gdzie użytkownik zostanie przekierowany po użyciu danej drogi przypisanej do danego obiektu w kodzie np. napisu lub przycisku.
+
+\section{Ochrona tras}
+Za ochronę dostępnością tras odpowiada strona backendu, podczas wywoływania żądania, serwer zwraca odpowiedni komunikat wraz ze statusem (401/403), po czym klient wyświetla go w interfejsie. Oznacza to, że niezalogowany użytkownik może wejść w stronę profilu użytkownika, ale nie będzie mógł na nim wykonywać czynności ponieważ otrzyma komunikat o potrzebie zalogowania, aby odblokować te funkcjonalności. Takie podejście zapewni większą czytelność i zrozumienie aplikacji przez użytkowników oraz sprawi, że serwer decyduje o tym czy użytkownik ma dostęp do danych funkcjonalności co zwiększa bezpieczeństwo aplikacji.
+
+\section{Kalendarz i lista slotów}
+Do wyboru terminu rezerwacji zaimplementowano własny komponent kalendarza, bez użycia zewnętrznej biblioteki. Pozwoliło to dopasować go do modelu danych aplikacji, w którym oferta posiada cykliczną dostępność (dni tygodnia i przedziały godzin) oraz stały czas trwania usługi.
+
+
+\subsection{Siatka miesiąca}
+Siatka kalendarza budowana jest dla aktualnie wyświetlanego miesiąca. Liczbę dni miesiąca wyznacza się za pomocą obiektu \texttt{Date} (dzień zerowy następnego miesiąca to ostatni dzień bieżącego). Ponieważ w JavaScripcie niedziela ma indeks 0, a w polskim kalendarzu tydzień zaczyna się od poniedziałku, indeks pierwszego dnia miesiąca jest przesuwany, a przed pierwszym dniem wstawiane są puste komórki. Użytkownik przechodzi między miesiącami przyciskami ``$\leftarrow$'' i ``$\rightarrow$''.
+
+\subsection{Dostępność dni}
+Dzień jest aktywny (możliwy do kliknięcia), gdy oferta posiada wpis dostępności dla jego dnia tygodnia. Pozostałe dni są wyszarzone i przekreślone, co informuje użytkownika, że w tym dniu usługa nie jest świadczona.
+
+\newpage
+\subsection{Generowanie slotów}
+Po wybraniu dnia aplikacja generuje listę terminów na podstawie godzin rozpoczęcia i zakończenia dostępności oraz czasu trwania usługi (\texttt{duration}, w minutach). Godziny są zamieniane na minuty od północy, a kolejne sloty powstają z krokiem równym czasowi trwania usługi, dopóki slot mieści się w przedziale dostępności. Przykładowo, dla dostępności 09:00--12:00 i usługi trwającej 60 minut powstają sloty 09:00, 10:00 i 11:00. Metoda również zapewnia, że ostatnia usługa kończy się nie później niż koniec dostępności.
+
+\subsection{Zajęte terminy i wybór slotu}
+Rezerwacje danej oferty są pobierane z backendu i porównywane z każdym slotem po dacie i godzinie rozpoczęcia. Zajęte sloty są wyświetlane jako nieaktywne. Po wybraniu wolnego slotu użytkownik może podać dane do faktury, a następnie wybiera sposób płatności (gotówka lub karta). Niezalogowany gość jest przekierowywany do formularza rezerwacji gościa, a wybrany czas przekazywany jest w parametrze adresu URL.
+
+\subsection{Ograniczenia}
+Przeszłe dni bieżącego miesiąca nie są blokowane w interfejsie, a ich odrzucanie odbywa się po stronie backendu. Zajętość slotu sprawdzana jest wyłącznie po godzinie rozpoczęcia. Ostateczna walidacja dostępności terminu następuje w serwerze w momencie tworzenia rezerwacji.
+
+
+\section{Pozostałe elementy interfejsu}
+Na stronie startowej ogłoszenia prezentowane są na interaktywnej mapie OpenStreetMap zbudowanej z użyciem bibliotek Leaflet i react-leaflet, gdzie każde ogłoszenie oznaczone jest pinezką. Wyniki można zawęzić filtrami (kategorie, zakres ceny), a wyszukiwanie miast działa z opóźnieniem (\textit{debounce}), dzięki czemu zapytanie do serwera wysyłane jest dopiero po krótkiej przerwie w pisaniu, a nie przy każdym naciśnięciu klawisza. Lista ogłoszeń jest stronicowana po stronie backendu, co ogranicza ilość przesyłanych danych.
+
+
+\newpage
+\section{Zrzuty ekranu UI}
+
+
+\begin{figure}[H]
+    \centering
+    \vspace*{-4cm}
+    \hspace*{-2.5cm}
+    \includegraphics[height=0.7\textheight]{images/home_page.png}
+    \caption{Zrzut ekranu z panelu wyszukiwarki ogłoszeń}
+    \label{fig:wyszukiwarka}
+    Panel wyszukiwarki ogłoszeń (rys. \ref{fig:wyszukiwarka}) umożliwia użytkownikowi przeglądanie dostępnych ofert i filtrowanie ich według nazwy, miasta, kategorii oraz zakresu cenowego. Filtry można zresetować przyciskiem „Wyczyść filtry”. Lokalizacje ogłoszeń prezentowane są na interaktywnej mapie opartej na bibliotece Leaflet i danych OpenStreetMap, którą można pokazać lub ukryć przyciskiem. Poniżej mapy wyświetlana jest lista ogłoszeń, a każdy element zawiera zdjęcie (opcjonalnie), nazwę, krótki opis, cenę początkową oraz przycisk „Zobacz szczegóły”, który przenosi do widoku danego ogłoszenia.
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+    \centering  
+    \hspace*{-2.5cm}
+    \includegraphics[height=0.6\textheight]{images/produkt.png}
+    \caption{Zrzut ekranu z panelu danego ogłoszenia}
+    \label{fig:ogloszenie}
+    Rysunek \ref{fig:ogloszenie} przedstawia widok pojedynczego ogłoszenia. U góry strony znajduje się pasek nawigacji, który jest dostępny na wszystkich podstronach aplikacji i umożliwia przejście do strony głównej, zalogowanie się, rejestrację oraz dostęp do konta użytkownika. Na pozostałych zrzutach ekranu pasek ten został pominięty w celu zmniejszenia rozmiaru wklejanych zdjęć. Widok ogłoszenia zawiera zdjęcie, nazwę, krótki opis, kategorie oraz adres lokalu. Poniżej wyświetlana jest sekcja „Oferty”, w której każda oferta jest opisana nazwą, opisem, ceną i czasem trwania. Przycisk „Sprawdź” przenosi użytkownika do kalendarza dostępnych terminów danej oferty.
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=0.28\textheight, width=\linewidth, keepaspectratio]{images/kalendarz.png}
+        \caption{Kalendarz dostępnych terminów}
+        \label{fig:kalendarz}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=0.28\textheight, width=\linewidth, keepaspectratio]{images/godziny.png}
+        \caption{Terminarz dostępnych godzin}
+        \label{fig:godziny}
+    \end{subfigure}
+
+    \vspace{0.5cm}
+
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=0.28\textheight, width=\linewidth, keepaspectratio]{images/wybor_platnosci.png}
+        \caption{Okno wyboru płatności dla zalogowanych użytkowników}
+        \label{fig:wybor-platnosci}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=0.28\textheight, width=\linewidth, keepaspectratio]{images/platnosc.png}
+        \caption{Okno płatności}
+        \label{fig:platnosc}
+    \end{subfigure}
+
+    \caption{Zrzuty ekranu z procesu rezerwacji terminu i płatności}
+    \label{fig:kalendarz-godziny}
+
+\end{figure}
+\newpage
+Rysunek \ref{fig:kalendarz-godziny} przedstawia widok wyboru terminu rezerwacji. Kalendarz dostępnych terminów (rys. \ref{fig:kalendarz}) wyświetla bieżący miesiąc z możliwością przełączania miesięcy za pomocą strzałek. Dni, w których usługa nie jest dostępna, są wyszarzone i nie można ich wybrać, a aktualnie wybrany dzień jest wyróżniony kolorem niebieskim. Po kliknięciu wybranego dnia otwiera się terminarz dostępnych godzin (rys. \ref{fig:godziny}), czyli okno z datą oraz listą przedziałów czasowych.
+
+Po zarezerwowaniu danego terminu system blokuje go, dzięki czemu nie jest już widoczny jako dostępny dla innych użytkowników. Jeżeli zajęte zostaną wszystkie przedziały w danym dniu, dzień w kalendarzu zostaje wyszarzony.
+
+Dalszy przebieg rezerwacji zależy od statusu użytkownika. Po kliknięciu „Potwierdź rezerwację” gość zostaje przekierowany do płatności. Użytkownikowi zalogowanemu wyświetla się natomiast okno wyboru metody płatności (rys. \ref{fig:wybor-platnosci}). Zawiera ono informację o terminie rezerwacji oraz przyciski „Zapłać gotówką” (dostępny tylko wtedy, gdy właściciel lokalu dopuszcza taką formę płatności) i „Zapłać online”, a także przycisk „Anuluj”, który przerywa proces rezerwacji. Wybranie opcji „Potrzebuję faktury” powoduje wyświetlenie okien z formularzami, w których użytkownik uzupełnia dane niezbędne do jej wystawienia.
+
+Wybór płatności online, a w przypadku gościa kliknięcie „Potwierdź rezerwację”, otwiera okno płatności (rys. \ref{fig:platnosc}). Wyświetla ono formularz płatności obsługiwany przez system Stripe, w którym użytkownik może skorzystać z zapisanej metody płatności, np. karty kredytowej, albo wybrać inną opcję przyciskiem „Zmień metodę płatności”. Transakcję zatwierdza przycisk „Zapłać teraz”, a przycisk „Anuluj” pozwala z niej zrezygnować. Po pomyślnym opłaceniu rezerwacja zostaje potwierdzona. Jeżeli usługa jest bezpłatna, płatność jest pomijana, a rezerwacja zostaje potwierdzona od razu.
+
+
+\newpage
+\begin{figure}[H]
+    \centering  
+    \hspace*{-3cm}
+    \includegraphics[height=0.41\textheight]{images/profil.png}
+    \caption{Zrzut ekranu z panelu profilu użytkownika}
+    \label{fig:profil}
+\end{figure}
+\begin{figure}[H]
+    \centering  
+    \hspace*{-3cm}
+    \includegraphics[height=0.42\textheight]{images/zarzadzanie_rez.png}
+    \caption{Zrzut ekranu z panelu zarządzania rezerwacjami}
+    \label{fig:zarz_rezerwacjami}
+\end{figure}
+\begin{figure}[H]
+    \centering  
+    \hspace*{-3cm}
+    \includegraphics[height=0.43\textheight]{images/moje_rez.png}
+    \caption{Zrzut ekranu z panelu rezerwacji użytkownika}
+    \label{fig:przeglad_rez_u}
+\end{figure}
+\begin{figure}[H]
+    \centering  
+    \hspace*{-3cm}
+    \includegraphics[height=0.20\textheight]{images/men_faktur.png}
+    \caption{Zrzut ekranu z panelu zarządzania fakturami}
+    \label{fig:panel_faktur}
+\end{figure}
+\newpage
+Funkcje aplikacji są zróżnicowane w zależności od statusu użytkownika. Gość może przeglądać i wyszukiwać ogłoszenia, wyświetlać ich szczegóły oraz zarezerwować termin z płatnością online. Zalogowany użytkownik ma dodatkowo dostęp do własnego profilu i historii rezerwacji. Funkcje związane z prowadzeniem ogłoszeń, czyli dodawanie ogłoszeń, zarządzanie rezerwacjami klientów i obsługa faktur, są dostępne wyłącznie dla użytkowników, którzy mają nadaną rolę usługodawcy przez administratora aplikacji.
+
+Rysunek \ref{fig:profil} przedstawia panel profilu użytkownika, który jest punktem wyjścia do pozostałych funkcji dla zalogowanych. W części głównej wyświetlana jest lista ogłoszeń stworzonych przez użytkownika z wyszukiwarką po nazwie, filtrem kategorii i zakresem cenowym oraz paginacją. Przy każdym ogłoszeniu znajdują się przyciski „Zobacz szczegóły” oraz „Zarządzaj rezerwacjami”. Panel boczny zawiera przyciski „Dodaj ogłoszenie”, „Moje rezerwacje”, „Menedżer faktur” oraz „Wyloguj się”. Sekcja „Twoje ogłoszenia” oraz przyciski „Dodaj ogłoszenie”, „Zarządzaj rezerwacjami” i „Menedżer faktur” są przeznaczone dla usługodawców, natomiast „Moje rezerwacje” i „Wyloguj się” są dostępne dla każdego zalogowanego użytkownika.
+
+Widok „Moje rezerwacje” (rys. \ref{fig:przeglad_rez_u}) jest dostępny dla każdego zalogowanego użytkownika i służy do przeglądania własnych rezerwacji. Można je filtrować według statusu: wszystkie, nadchodzące, zakończone i opłacone. Każda rezerwacja jest pokazywana z terminem rozpoczęcia i zakończenia, statusem oraz metodą płatności. Przycisk „Zobacz ogłoszenie” prowadzi do ogłoszenia, którego dotyczy rezerwacja, a przycisk „Anuluj” pozwala ją odwołać.
+
+Widok „Zarządzaj rezerwacjami” (rys. \ref{fig:zarz_rezerwacjami}) jest przeznaczony wyłącznie dla usługodawcy i pokazuje rezerwacje złożone na jego ogłoszenie. Można je wyszukiwać według klienta, nazwy oferty, imienia i nazwiska. Każda rezerwacja zawiera nazwę i opis oferty, metodę płatności (np. karta), status (np. potwierdzona), dane klienta, termin, czas trwania oraz cenę. Usługodawca może odwołać rezerwację przyciskiem „Odwołaj”.
+
+Widok „Wnioski o fakturę” (rys. \ref{fig:panel_faktur}), dostępny z menedżera faktur, również jest przeznaczony dla usługodawcy. Wyświetla wnioski klientów, którzy wybrali opcję „Potrzebuję faktury”, wraz z danymi niezbędnymi do jej wystawienia: nazwą, adresem e-mail, numerem NIP i adresem. Wnioski można wyszukiwać po adresie e-mail i filtrować według statusu, a po wystawieniu faktury usługodawca oznacza wniosek przyciskiem „Oznacz jako wystawioną”.
+
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=0.55\textheight, width=\linewidth, keepaspectratio]{images/create_listing.png}
+        \caption{Formularz tworzenia ogłoszenia}
+        \label{fig:create-listing}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=0.55\textheight, width=\linewidth, keepaspectratio]{images/dodaj_oferte.png}
+        \caption{Formularz dodawania oferty}
+        \label{fig:add-offer}
+    \end{subfigure}
+    \caption{Zrzuty ekranu z formularzy tworzenia ogłoszenia i dodawania oferty}
+    \label{fig:formularze-ogloszenia}
+\end{figure}
+
+Formularz „Dodaj ogłoszenie” (rys. \ref{fig:create-listing}) służy do dodania nowego ogłoszenia przez właściciela lokalu lub usługodawcę. Użytkownik wpisuje w nim nazwę i opis ogłoszenia, adres (ulica, numer budynku, miasto, kod pocztowy, kraj), cenę początkową oraz kategorię. W sekcji „Oferty” przyciskiem „+” dodaje poszczególne oferty, a następnie może dołączyć zdjęcie. Całość zatwierdza przycisk „Dodaj ogłoszenie”.
+
+Formularz „Dodaj ofertę” (rys. \ref{fig:add-offer}), otwierany po kliknięciu „+” w sekcji „Oferty”, służy do zdefiniowania pojedynczej oferty w ogłoszeniu. Użytkownik podaje nazwę, opis, cenę i czas trwania usługi w minutach oraz określa, czy dopuszcza płatność gotówką i czy oferuje możliwość wystawienia faktury. W sekcji „Dostępne dni” zaznacza dni tygodnia, w których oferta jest dostępna, i dla każdego z nich ustala godzinę rozpoczęcia i zakończenia. Całość zatwierdza przycisk „Dodaj ofertę”.
+
+
+\chapter{Zakończenie}
+
+\section{Podsumowanie}
+Celem pracy było stworzenie uniwersalnej aplikacji webowej, która pozwala usługodawcom z różnych branż publikować ogłoszenia z ofertami i terminami dostępności, a klientom szybko wyszukiwać usługi i je rezerwować. Cel ten został zrealizowany.
+
+Zrealizowano wszystkie założone wymagania funkcjonalne. Użytkownicy mogą się rejestrować i logować, a dostęp do zasobów jest kontrolowany za pomocą tokenów JWT i ról (GOŚĆ, USER, PROVIDER). Usługodawca może dodawać ogłoszenia z wieloma ofertami, ustalać dni i godziny dostępności oraz zarządzać rezerwacjami i wnioskami o faktury. Klient może przeglądać i filtrować ogłoszenia (także na mapie), rezerwować terminy oraz płacić online lub, o ile oferta na to pozwala, gotówką. Rezerwacje mogą składać również goście bez konta, a wznowienie przerwanej płatności umożliwia link wysyłany e-mailem. Płatności online obsługuje Stripe (w trybie testowym), a ich potwierdzanie odbywa się za pomocą webhooków. Aplikacja wysyła też wiadomości e-mail, m.in. potwierdzenia płatności i przypomnienia o wizycie.
+
+Szczególną uwagę poświęcono poprawności i bezpieczeństwu rezerwacji. Podwójne rezerwacje tego samego terminu są blokowane na poziomie serwisu oraz dzięki izolacji transakcji \texttt{SERIALIZABLE}. Nieopłacone rezerwacje kartą wygasają automatycznie po 15 minutach, a dane kart nie trafiają na serwer aplikacji, lecz bezpośrednio do Stripe. Kluczowe procesy (rezerwacje, płatności, uwierzytelnianie i fakturowanie) zostały pokryte testami jednostkowymi i integracyjnymi, a testy integracyjne uruchamiane są na prawdziwej bazie PostgreSQL w kontenerze Docker. Całość można uruchomić jednym poleceniem dzięki Docker Compose.
+
+\section{Wnioski}
+Realizacja projektu pokazała, że oddzielenie warstwy klienta od serwera oraz podział backendu na kontrolery, serwisy i repozytoria ułatwia zarówno rozwój, jak i testowanie aplikacji. Wybór relacyjnej bazy danych okazał się uzasadniony ze względu na silnie powiązane ze sobą dane (ogłoszenia, oferty, rezerwacje, faktury), a mechanizm \texttt{JpaSpecificationExecutor} pozwolił zbudować elastyczne filtrowanie bez konieczności tworzenia ogromnej ilości metod repozytorium. Przekazanie obsługi płatności zewnętrznemu operatorowi uprościło aplikację i ograniczyło ryzyko związane z przetwarzaniem danych kart, jednak wymagało dokładnego zaprojektowania obsługi webhooków oraz stanów rezerwacji.
+
+Zastosowane rozwiązania sprawdzają się w środowisku testowym i przy skali typowej dla projektu inżynierskiego. Wdrożenie produkcyjne wymagałoby jednak uzupełnienia systemu o elementy opisane poniżej, a także m.in. zastąpienia kluczy testowych Stripe produkcyjnymi oraz zmiany konfiguracji CORS na docelową domenę. Wdrożenie wymagałoby również własnego serwera lub usług chmurowych, co wiązałoby się z dodatkowymi kosztami.
+
+\section{Ograniczenia i możliwości rozwoju aplikacji}
+Zrealizowany system ma kilka ograniczeń, które wskazują kierunki dalszego rozwoju. Rola usługodawcy jest nadawana ręcznie w bazie danych, ponieważ aplikacja nie posiada panelu administratora. Uwierzytelnianie oparte na tokenach JWT nie umożliwia ich unieważniania po stronie serwera ani odświeżania (brak refresh tokena). System nie oferuje również resetowania hasła ani weryfikacji adresu e-mail. Zwroty i anulowanie płatności nie są obsługiwane automatycznie i wymagają ręcznej obsługi w systemie Stripe.
+
+Naturalnymi kierunkami rozwoju są więc: panel administratora z procesem nadawania roli usługodawcy, mechanizm odświeżania i unieważniania tokenów, reset hasła i weryfikacja e-mail, automatyczne zwroty płatności po odwołaniu rezerwacji, integracja z systemami fakturowania (w tym KSeF) oraz aplikacja mobilna i obsługa wielu języków.
+
+
+\begin{thebibliography}{9}
+
+
+\bibitem{elmasri}
+Wprowadzenie do Systemów Baz Danych, Elmasri Ramez, Navathe Shamkant B.; Helion; 2019.
+
+\bibitem{wrycza}
+Język UML 2.0 w modelowaniu systemów informatycznych, Wrycza S., Marcinkowski B., Wyrzykowski K.; Helion; 2005.
+
+\bibitem{sommerville}
+Inżynieria oprogramowania, Ian Sommerville; PWN; 2020.
+
+\bibitem{horstmann}
+Java Podstawy. Wydanie XII, Cay Horstmann; Helion; 2022.
+
+\bibitem{react}
+React dokumentacja, \url{https://react.dev/learn}, dostęp: 17.03.2026.
+
+\bibitem{springjpa}
+Spring JPA dokumentacja, \url{https://docs.spring.io/spring-data/jpa/reference/api/java/}, dostęp: 17.03.2026.
+
+\bibitem{postgresql}
+PostgreSQL dokumentacja, \url{https://www.postgresql.org/docs/}, dostęp: 17.03.2026.
+
+\bibitem{springsecurity}
+Spring Security dokumentacja, \url{https://docs.spring.io/spring-security/reference/index.html}, dostęp: 17.03.2026.
+
+\bibitem{springboot}
+Spring Boot dokumentacja, \url{https://docs.spring.io/spring-boot/index.html}, dostęp: 17.03.2026.
+
+\bibitem{nominatim}
+Nominatim dokumentacja, \url{https://nominatim.org/release-docs/develop/}, dostęp: 06.09.2026.
+
+\bibitem{typescript}
+TypeScript dokumentacja, \url{https://www.typescriptlang.org/docs/}, dostęp: 06.09.2026.
+
+\bibitem{react-leaflet}
+react-leaflet dokumentacja, \url{https://react-leaflet.js.org/docs/start-introduction/}, dostęp: 06.09.2026.
+
+\bibitem{stripe}
+Stripe dokumentacja, \url{https://docs.stripe.com/}, dostęp: 06.09.2026.
+
+\bibitem{stripe-api}
+Stripe API dokumentacja, \url{https://docs.stripe.com/api?lang=java}, dostęp: 06.09.2026.
+
+\bibitem{booking2026faktury}
+Booking.com for Business, \textit{Jak mogę otrzymać fakturę?},
+\url{https://help.business.booking.com/hc/pl/articles/14862570197268-Jak-mog%C4%99-otrzyma%C4%87-faktur%C4%99},
+dostęp: 20.09.2026.
+
+\bibitem{tpay2025platnosci}
+Tpay, \textit{Jak Polacy kupują online 2024/2025 — ulubione metody płatności},
+\url{https://tpay.com/user/assets/files_for_download/news/ulubione-metody-platnosci-online-raport_informacja\%20prasowa.pdf},
+dostęp: 20.09.2026.
+
+\bibitem{fakturownia2026ksef}
+Fakturownia, \textit{Krajowy System e-Faktur — czym jest i jak wygląda integracja z Fakturownią},
+\url{https://fakturownia.pl/komunikaty/krajowy-system-e-faktur-czym-jest-i-jak-wyglada-integracja-z-fakturownia},
+dostęp: 20.09.2026.
+
+\bibitem{DefinicjaFramework}
+DefinicjaFramework, \textit{Definicja frameworku wikipedia},
+\url{https://pl.wikipedia.org/wiki/Framework},
+dostęp: 20.09.2026.
+
+
+
+\bibitem{RESTAPI_definicja}
+DefinicjaRESTAPI, \textit{Definicja REST API},
+\url{https://www.ovhcloud.com/pl/learn/what-is-rest-api/},
+dostęp: 20.09.2026.
+
+
+
+\bibitem{HTTP_definicja}
+DefinicjaHTTP, \textit{Definicja HTTP},
+\url{https://ks.pl/slownik/co-to-jest-http},
+dostęp: 20.09.2026.
+
+
+\bibitem{listaFrontendFramework}
+listaFrontendFramework, \textit{Lista frameworków frontendowych},
+\url{https://hackajob.com/talent/blog/top-10-frameworks-to-learn-in-2025-and-when-to-use-them},
+dostęp: 20.09.2026.
+
+
+
+\bibitem{listaBackendFramework}
+listaBackendFramework, \textit{Lista frameworków backendowych},
+\url{https://rockstardeveloperuniversity.com/best-backend-frameworks/},
+dostęp: 20.09.2026.
+
+
+
+\bibitem{webhookDefinicja}
+webhookDefinicja, \textit{webhook Definicja},
+\url{https://www.getresponse.pl/pomoc/webhook.html},
+dostęp: 26.09.2026.
+
+\bibitem{MockitoFrameworkSite}
+MockitoFrameworkSite, \textit{Mockito framework site},
+\url{https://site.mockito.org/},
+dostęp: 24.10.2026.
+
+
+\bibitem{Leafletbiblioteka}
+Leafletbiblioteka, \textit{Biblioteka Leaflet},
+\url{https://leafletjs.com/reference.html},
+dostęp: 31.10.2026.
+
+
+\bibitem{CORSdefinicja}
+CORSdefinicja, \textit{CORS definicja},
+\url{https://dhosting.pl/pomoc/baza-wiedzy/czym-jest-cors-i-jak-dziala/},
+dostęp: 03.11.2026.
+\end{thebibliography}
+
+
+
+
+\begin{streszczenie}
+Praca przedstawia implementację aplikacji webowej do zarządzania rezerwacjami usług. Aplikacja pozwala usługodawcom z różnych branż publikować ogłoszenia z ofertami, cenami i terminami dostępności, a klientom wyszukiwać usługi, filtrować je (także na mapie) oraz rezerwować terminy, również bez zakładania konta. Część serwerową zrealizowano w Javie z użyciem Spring Boot jako REST API z uwierzytelnianiem opartym na tokenach JWT i rolami użytkowników, dane przechowywane są w bazie PostgreSQL, a interfejs użytkownika wykonano w React i TypeScript. Płatności online obsługuje Stripe w trybie testowym, a ich potwierdzanie odbywa się za pomocą webhooków. Do geokodowania adresów wykorzystano Nominatim, a do wysyłania powiadomień serwer SMTP. W pracy opisano założenia teoretyczne, projekt bazy danych, architekturę, kluczowe procesy (rezerwacja, płatność, logowanie), zabezpieczenia oraz wyniki testów jednostkowych i integracyjnych. Pokazano m.in. sposób ochrony przed podwójnymi rezerwacjami z użyciem izolacji transakcji \texttt{SERIALIZABLE}. Na koniec wskazano ograniczenia systemu i kierunki jego dalszego rozwoju.
+
+\medskip
+\end{streszczenie}
+
+\begin{abstract}
+The thesis presents the design and implementation of a universal web application for managing service reservations. The application allows service providers from different industries to publish listings with offers, prices and availability, while customers can search and filter services (including on a map) and book time slots, also without creating an account. The backend was implemented in Java using Spring Boot as a REST API with JWT-based authentication and user roles, data is stored in a PostgreSQL database, and the user interface was built with React and TypeScript. Online payments are handled by Stripe in test mode and confirmed by webhooks. Nominatim is used for address geocoding and an SMTP server for sending notifications. The thesis describes the theoretical background, the database design, the architecture, key processes (reservation, payment, login), security mechanisms, and the results of unit and integration tests. It shows, among other things, how double bookings are prevented using the \texttt{SERIALIZABLE} transaction isolation level. Finally, the limitations of the system and directions for further development are discussed.
+
+\medskip
+\end{abstract}
+\end{document}

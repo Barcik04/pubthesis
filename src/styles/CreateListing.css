@@ -1,0 +1,458 @@
+.page {
+    min-height: 100vh;
+    padding: 60px 24px;
+    color: #111827;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transform: translate(0, -50px);
+}
+
+.create-card {
+    width: 100%;
+    max-width: 720px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 36px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.create-header {
+    margin-bottom: 32px;
+}
+
+.create-header h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.create-header p {
+    margin: 0;
+    font-size: 15px;
+    color: #6b7280;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.create-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.create-form input,
+.create-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 13px 14px;
+    font-size: 15px;
+    color: #111827;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-form textarea {
+    min-height: 130px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.create-form input::placeholder,
+.create-form textarea::placeholder {
+    color: #9ca3af;
+}
+
+.create-form input:focus,
+.create-form textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.submit-btn  {
+    margin-top: 8px;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 18px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.submit-btn:hover {
+    background: #1d4ed8;
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+.error {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+
+.image-row input {
+    width: auto;
+}
+
+
+
+.add-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.add-btn img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  margin-left: 10px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.add-btn img:hover {
+    transform: scale(1.1);
+}
+
+.offers-wrapper { 
+    display: flex;
+    flex-direction: row;
+    margin: 10px 0 10px 0;
+}
+
+.offers-section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+
+
+.offers-wrapper h2 {
+  margin: 0;
+}
+
+.offers-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0 0;
+} 
+
+
+
+.offer-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.offer-popup {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.offer-popup h2 {
+  margin: 0;
+}
+
+.offer-popup label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.offer-popup input,
+.offer-popup textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-size: 15px;
+  color: #111827;
+  background: #ffffff;
+  outline: none;
+}
+
+.offer-popup textarea {
+  min-height: 110px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+
+
+
+
+
+
+.day-row {
+  margin-bottom: 10px;
+}
+
+.offer-popup .day-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: fit-content;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.offer-popup .day-label span {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.offer-popup .day-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.available-days {
+  font-size: 25px;
+  margin-bottom: 14px;
+}
+
+.form-row {
+    margin-bottom: 37px;
+}
+
+
+
+
+
+
+.offer-object {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px 70px 14px 16px;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+
+.offer-main-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 0.8fr 0.8fr;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.offer-main-row h3,
+.offer-main-row p {
+  margin: 0;
+}
+
+.offer-expand-btn {
+  align-self: flex-start;
+  width: fit-content;
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  cursor: pointer;
+  font-weight: 700;
+  color: #111827;
+}
+
+.offer-expand-btn:hover {
+  color: #2563eb;
+}
+
+.offer-availabilities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.offer-availabilities p {
+  margin: 0;
+  color: #374151;
+}
+
+
+
+
+
+.cash-payment-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  cursor: pointer;
+}
+
+.cash-payment-checkbox input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.cash-payment-checkbox span {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.offer-main-row .cash-availability-show {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.cash-availability-show span,
+.cash-availability-show strong {
+  display: inline;
+  white-space: nowrap;
+}
+
+
+
+.offer-main-row .cash-availability-show {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.cash-availability-show span,
+.cash-availability-show strong {
+  white-space: nowrap;
+}
+
+
+
+.offer-content-create-listing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.buttons-wrap-create-listing {
+  position: absolute;
+  top: 9px;
+  right: 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.offer-object:hover .buttons-wrap-create-listing {
+  opacity: 1;
+  visibility: visible;
+}
+
+.edit-offer-button-create-listing,
+.delete-offer-button-create-listing {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.edit-offer-button-create-listing {
+  background: #111827;
+}
+
+.edit-offer-button-create-listing:hover {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
+.delete-offer-button-create-listing {
+  background: #991b1b;
+}
+
+.delete-offer-button-create-listing:hover {
+  background: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+.edit-offer-button-create-listing img,
+.delete-offer-button-create-listing img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: invert(1);
+}

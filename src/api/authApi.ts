@@ -6,13 +6,15 @@ type LoginRequest = {
 type RegisterRequest = {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
 };
 
-type LoginResponse = {
-  token: string;
-  tokenType: "Bearer";
+export type LoginResponse = {
+  accessToken: string;
   email: string;
   roles: string[];
+  tokenType: string;
 };
 
 
@@ -28,10 +30,16 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   });
 
   if (!response.ok) {
-    throw new Error("Invalid email or password");
+    throw new Error("Nieprawidłowy email lub hasło");
   }
 
-  return response.json();
+  const result: LoginResponse = await response.json();
+
+  localStorage.setItem("accessToken", result.accessToken);
+  localStorage.setItem("email", result.email);
+  localStorage.setItem("roles", JSON.stringify(result.roles));
+
+  return result;
 }
 
 export async function register(data: RegisterRequest): Promise<void> {
@@ -45,6 +53,25 @@ export async function register(data: RegisterRequest): Promise<void> {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Registration failed");
+    throw new Error(error.message || "Rejestracja nie powiodła się");
+  }
+}
+
+
+
+
+export async function logout(): Promise<void> {
+  try {
+    await fetch(`${API_URL}/signout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("email");
+    localStorage.removeItem("roles");
   }
 }

@@ -7,6 +7,8 @@ import "../styles/RegisterPage.css";
 function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -21,16 +23,20 @@ function RegisterPage() {
       await register({
         email: email,
         password: password,
+        firstName: firstName,
+        lastName: lastName,
       });
 
-      setMessage("Account created. You can now sign in.");
+      setMessage("Konto zostało utworzone. Możesz się teraz zalogować.");
       setEmail("");
       setPassword("");
+      setFirstName("");
+      setLastName("");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Registration failed");
+        setError("Rejestracja nie powiodła się");
       }
     }
   }
@@ -38,10 +44,30 @@ function RegisterPage() {
   return (
     <main className="auth-page">
       <section className="auth-card">
-        <h1>Create account</h1>
-        <p>Register a new account.</p>
+        <h1>Załóż konto</h1>
+        <p>Zarejestruj nowe konto.</p>
 
         <form onSubmit={handleSubmit}>
+          <label>
+            Imię
+            <input
+              type="text"
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Nazwisko
+            <input
+              type="text"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+              required
+            />
+          </label>
+
           <label>
             Email
             <input
@@ -53,7 +79,7 @@ function RegisterPage() {
           </label>
 
           <label>
-            Password
+            Hasło
             <input
               type="password"
               value={password}
@@ -63,14 +89,14 @@ function RegisterPage() {
             />
           </label>
 
-          <button type="submit">Create account</button>
+          <button type="submit">Załóż konto</button>
         </form>
 
         {error && <p className="error">{error}</p>}
         {message && <p className="success">{message}</p>}
 
         <p>
-          Already have an account? <Link to="/login">Sign in</Link>
+          Masz już konto? <Link to="/signin">Zaloguj się</Link>
         </p>
       </section>
     </main>

@@ -1,24 +1,41 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import Start from "./pages/start";
+import Start from "./pages/Start";
+import User from "./pages/User";
+import CreateListing from "./pages/CreateListing";
+import UpdateListing from "./pages/UpdateListing";
+import Reservation from "./pages/Reservation";
+import MyReservations from "./pages/MyReservations";
+import ManageReservations from "./pages/ManageReservations";
 
 import Navbar from "./components/Navbar";
-
+import ListingPage from "./pages/ListingPage";
+import GuestReservation from "./pages/GuestReservation";
+import InvoiceManager from "./pages/InvoiceManager";
+import Payment from "./pages/Payment";
 
 function App() {
-  const handleToggleSidebar = () => {
-    console.log("Sidebar toggle");
-  };
+
 
   return (
     <>
-      <Navbar onToggleSidebar={handleToggleSidebar} />
+      <Navbar />
 
       <Routes>
         <Route path="/signin" element={<LoginPage />} />
         <Route path="/signup" element={<RegisterPage />} />
         <Route path="/start" element={<Start />} />
+        <Route path="/user" element={<User />} />
+        <Route path="/create-listing" element={<CreateListing />} />
+        <Route path="/update-listing/:productId" element={<UpdateListing />} />
+        <Route path="/listing-page/:productId" element={<ListingPage />} />
+        <Route path="/reservation/:offerId" element={<Reservation />} />
+        <Route path="/my-reservations" element={<MyReservations />} />
+        <Route path="/manage-reservations/:productId"element={<ManageReservations />} />
+        <Route path="/guest-reservation/:offerId" element={<GuestReservation />}/>
+        <Route path="/invoice-manager" element={<InvoiceManager />}/>
+        <Route path="/payment" element={<Payment />} />
       </Routes>
     </>
   );
